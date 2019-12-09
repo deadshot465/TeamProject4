@@ -21,7 +21,7 @@ int main()
 		DrawText("FUCK OFF!!!", 570, 400, 40, LIGHTGRAY);
 		DrawText("FUCK OFF!!!", 760, 500, 50, LIGHTGRAY);
 
-		RED
+		
 
 		EndDrawing();
 	}

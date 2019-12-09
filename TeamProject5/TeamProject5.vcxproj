@@ -75,8 +75,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\Users\sonic\OneDrive\文件\repos\TeamProject5\TeamProject5\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\sonic\OneDrive\文件\repos\TeamProject5\TeamProject5\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>D:\チーム制作\TeamProject4\TeamProject5\include;$(IncludePath)</IncludePath>
+    <LibraryPath>D:\チーム制作\TeamProject4\TeamProject5\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
