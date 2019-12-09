@@ -2,31 +2,13 @@
 //
 
 #include <iostream>
-#include <raylib.h>
+#include "Window.h"
 
 int main()
 {
-    InitWindow(1024, 768, "Hello");
+	auto window = Window("FUCK OFF!", 1024, 768);
 
-    SetTargetFPS(60);
-
-	while (!WindowShouldClose())
-	{
-		BeginDrawing();
-
-		ClearBackground(RAYWHITE);
-
-		DrawText("FUCK OFF!!!", 190, 200, 20, LIGHTGRAY);
-		DrawText("FUCK OFF!!!", 380, 300, 30, LIGHTGRAY);
-		DrawText("FUCK OFF!!!", 570, 400, 40, LIGHTGRAY);
-		DrawText("FUCK OFF!!!", 760, 500, 50, LIGHTGRAY);
-
-		RED
-
-		EndDrawing();
-	}
-
-	CloseWindow();
+	window.Run(VIOLET);
 
 	return 0;
 }
