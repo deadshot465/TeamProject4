@@ -1,0 +1,10 @@
+﻿  ConfigurationManager.cpp
+  ECS.cpp
+C:\Users\sonic\OneDrive\文件\repos\TeamProject5\ECS.cpp(84,7): warning C4834: 'nodiscard' 属性を持つ関数の戻り値を破棄しています
+C:\Users\sonic\OneDrive\文件\repos\TeamProject5\ECS.cpp(197,7): warning C4834: 'nodiscard' 属性を持つ関数の戻り値を破棄しています
+  GameScene.cpp
+  main.cpp
+  Primitives.cpp
+  Window.cpp
+  コードを生成中...
+  ChipmunkDemo.vcxproj -> C:\Users\sonic\OneDrive\文件\repos\TeamProject5\x64\Debug\ChipmunkDemo.exe
