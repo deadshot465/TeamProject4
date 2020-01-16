@@ -66,6 +66,9 @@ public:
 	Entity& operator=(Entity&& entity) noexcept;
 
 	glm::vec2 Position = {};
+	bool IsRelative = false;
+	glm::vec2 RelativePosition = {};
+	Entity* Parent = nullptr;
 
 private:
 	std::vector<std::unique_ptr<Component>> mComponents =
