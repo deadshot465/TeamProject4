@@ -155,7 +155,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Colliders.cpp" />
+    <ClCompile Include="CollisionSystem.cpp" />
     <ClCompile Include="ConfigurationManager.cpp" />
+    <ClCompile Include="Controller.cpp" />
     <ClCompile Include="ECS.cpp" />
     <ClCompile Include="GameScene.cpp" />
     <ClCompile Include="main.cpp" />
@@ -163,7 +166,10 @@
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Colliders.h" />
+    <ClInclude Include="CollisionSystem.h" />
     <ClInclude Include="ConfigurationManager.h" />
+    <ClInclude Include="Controller.h" />
     <ClInclude Include="ECS.h" />
     <ClInclude Include="GameScene.h" />
     <ClInclude Include="Helper.h" />

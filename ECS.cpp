@@ -59,11 +59,11 @@ Entity::Entity(std::string_view name) : mName(name)
 Entity::Entity(Entity&& entity) noexcept
 {
 	mName = entity.mName;
-	mScene = entity.mScene;
+	CurrentScene = entity.CurrentScene;
 	std::move(entity.mComponents.begin(), entity.mComponents.end(), mComponents.begin());
 
 	entity.mName = "";
-	entity.mScene = nullptr;
+	entity.CurrentScene = nullptr;
 	entity.mComponents.clear();
 }
 
@@ -89,12 +89,12 @@ void Entity::RemoveComponent(std::string_view name)
 
 void Entity::AttachToScene(Scene* scene)
 {
-	mScene = scene;
+	CurrentScene = scene;
 }
 
 void Entity::DetachFromScene()
 {
-	mScene = nullptr;
+	CurrentScene = nullptr;
 }
 
 Entity& Entity::operator=(Entity&& entity) noexcept
@@ -103,11 +103,11 @@ Entity& Entity::operator=(Entity&& entity) noexcept
 	if (!mComponents.empty()) mComponents.clear();
 
 	mName = entity.mName;
-	mScene = entity.mScene;
+	CurrentScene = entity.CurrentScene;
 	std::move(entity.mComponents.begin(), entity.mComponents.end(), mComponents.begin());
 
 	entity.mName = "";
-	entity.mScene = nullptr;
+	entity.CurrentScene = nullptr;
 	entity.mComponents.clear();
 
 	return *this;
@@ -149,6 +149,12 @@ Scene::~Scene()
 	mEntities.clear();
 }
 
+void Scene::Initialize()
+{
+	for (auto& entity : mEntities)
+		entity.Initialize();
+}
+
 void Scene::Update(float deltaTime)
 {
 	for (auto& entity : mEntities)
@@ -164,21 +170,21 @@ void Scene::Render()
 Entity* Scene::AddEntity()
 {
 	Entity& entity = mEntities.emplace_back(Entity());
-	entity.mScene = this;
+	entity.CurrentScene = this;
 	return &entity;
 }
 
 Entity* Scene::AddEntity(std::string_view name)
 {
 	Entity& entity = mEntities.emplace_back(Entity(name));
-	entity.mScene = this;
+	entity.CurrentScene = this;
 	return &entity;
 }
 
 Entity* Scene::AddEntity(Entity entity)
 {
 	Entity& _entity = mEntities.emplace_back(std::move(entity));
-	_entity.mScene = this;
+	_entity.CurrentScene = this;
 	return &_entity;
 }
 

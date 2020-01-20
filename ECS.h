@@ -69,12 +69,12 @@ public:
 	bool IsRelative = false;
 	glm::vec2 RelativePosition = {};
 	Entity* Parent = nullptr;
+	Scene* CurrentScene = nullptr;
 
 private:
 	std::vector<std::unique_ptr<Component>> mComponents =
 		std::vector<std::unique_ptr<Component>>();
 	std::string mName = "";
-	Scene* mScene = nullptr;
 
 	void Update(float deltaTime);
 	void Render();
@@ -91,7 +91,7 @@ public:
 	Scene(const Scene& scene) = delete;
 	Scene(Scene&& scene) noexcept;
 	virtual ~Scene();
-	virtual void Initialize() = 0;
+	virtual void Initialize();
 	virtual void Update(float deltaTime);
 	virtual void Render();
 

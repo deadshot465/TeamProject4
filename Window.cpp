@@ -14,12 +14,6 @@ Window::Window(std::string_view title, int width, int height)
 	ConfigurationManager::SetViewport(width, height);
 	
 	mGameScene.Initialize();
-
-	auto player = mGameScene.AddEntity("player-entity");
-	player->Position = glm::vec2(512, 384);
-	auto circle = std::make_unique<Primitives::Circle>("player-circle", 50.0f);
-	circle->FillColor = GOLD;
-	player->AddComponent(circle);
 }
 
 Window::~Window()
@@ -41,18 +35,9 @@ void Window::Run(Color clearColor)
 
 		Update(delta);
 
-		BeginDrawing();
-
 		ClearBackground(clearColor);
 
-		DrawText("FUCK OFF!!!", 190, 200, 20, LIGHTGRAY);
-		DrawText("FUCK OFF!!!", 380, 300, 30, LIGHTGRAY);
-		DrawText("FUCK OFF!!!", 570, 400, 40, LIGHTGRAY);
-		DrawText("FUCK OFF!!!", 760, 500, 50, LIGHTGRAY);
-
 		Render();
-
-		EndDrawing();
 	}
 }
 
