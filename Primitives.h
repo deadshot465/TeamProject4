@@ -20,4 +20,23 @@ namespace Primitives
 		virtual void Update(float deltaTime) override;
 		virtual void Render() override;
 	};
+
+	class Rectangle
+		: public Component
+	{
+	public:
+		Rectangle();
+		Rectangle(std::string_view name, int width, int height, const Color& color = RED);
+		~Rectangle();
+
+		int Width = 50;
+		int Height = 50;
+		Color FillColor = RED;
+
+	protected:
+		// Component ÇâÓÇµÇƒåpè≥Ç≥ÇÍÇ‹ÇµÇΩ
+		virtual void Initialize() override;
+		virtual void Update(float deltaTime) override;
+		virtual void Render() override;
+	};
 }

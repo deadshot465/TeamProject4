@@ -4,9 +4,9 @@
 
 int main()
 {
-    auto window = Window("FUCK OFF!", 1024, 768);
+    auto window = Window("DEMO", 1024, 768);
 
-    window.Run(VIOLET);
+    window.Run(RAYWHITE);
 
     return 0;
 }

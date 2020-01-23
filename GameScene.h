@@ -1,6 +1,7 @@
 #pragma once
 #include <list>
 #include <raylib.h>
+#include "Colliders.h"
 #include "ECS.h"
 
 class GameScene :
@@ -17,8 +18,10 @@ public:
 
 private:
 	void GenerateEnemies(float deltaTime);
+	std::vector<Collider*> GetAllEnemyColliders() const noexcept;
 
 	Entity* mPlayerEntity = nullptr;
+	Entity* mShieldEntity = nullptr;
 	std::list<Entity*> mEnemyEntities{};
 };
 

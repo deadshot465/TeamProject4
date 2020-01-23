@@ -40,6 +40,8 @@ bool CircleCollider::CheckCollision(const Collider& other) const
 {
     assert(mEntity);
 
+    if (!other.Enabled) return false;
+
     Vector2 center = { mEntity->Position.x, mEntity->Position.y };
 
     const CircleCollider& _other = dynamic_cast<const CircleCollider&>(other);

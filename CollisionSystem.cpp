@@ -1,14 +1,14 @@
 #include "CollisionSystem.h"
 
-bool CollisionSystem::CheckCollision(const Collider& principal, const std::vector<Collider>& colliders,
-	const Collider* collidedObject)
+bool CollisionSystem::CheckCollision(const Collider& principal, const std::vector<Collider*>& colliders, Collider* collidedObject)
 {
-	for (const auto& collider : colliders)
+	for (auto& collider : colliders)
 	{
-		bool res = principal.CheckCollision(collider);
+		bool res = principal.CheckCollision(*collider);
 		if (res)
 		{
-			if (collidedObject) collidedObject = &collider;
+			if (collidedObject) *collidedObject = *collider;
+			collider->Enabled = false;
 			return res;
 		}
 	}

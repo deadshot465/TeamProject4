@@ -8,7 +8,6 @@ public:
 	CollisionSystem() = delete;
 	~CollisionSystem() = default;
 
-	static bool CheckCollision(const Collider& principal, const std::vector<Collider>& colliders,
-		const Collider* collidedObject = nullptr);
+	static bool CheckCollision(const Collider& principal, const std::vector<Collider*>& colliders, Collider* collidedObject = nullptr);
 };
 

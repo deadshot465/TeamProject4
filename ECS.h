@@ -1,6 +1,7 @@
 #pragma once
 #include <algorithm>
 #include <glm/glm.hpp>
+#include <list>
 #include <memory>
 #include <string>
 #include <string_view>
@@ -21,6 +22,8 @@ public:
 
 	Component& operator=(const Component& component);
 	Component& operator=(Component&& component) noexcept;
+
+	bool Enabled = true;
 
 protected:
 	std::string mName = "";
@@ -62,6 +65,8 @@ public:
 	void AttachToScene(Scene* scene);
 	void DetachFromScene();
 
+	const std::string& GetName() const noexcept;
+
 	Entity& operator=(const Entity& entity) = delete;
 	Entity& operator=(Entity&& entity) noexcept;
 
@@ -97,7 +102,7 @@ public:
 
 	Entity* AddEntity();
 	Entity* AddEntity(std::string_view name);
-	Entity* AddEntity(Entity entity);
+	Entity* AddEntity(std::unique_ptr<Entity>& entity);
 	Entity* GetEntity(std::string_view name);
 	void RemoveEntity(std::string_view name);
 
@@ -107,7 +112,8 @@ public:
 	bool IsInitialized() const noexcept;
 
 protected:
-	std::vector<Entity> mEntities = std::vector<Entity>();
+	std::list<std::unique_ptr<Entity>> mEntities =
+		std::list<std::unique_ptr<Entity>>();
 	std::string mName = "";
 	bool mInitialized = false;
 

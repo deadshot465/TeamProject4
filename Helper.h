@@ -8,6 +8,11 @@ inline constexpr Color ENEMY_COLORS[] = {
 	RED, GREEN, BLUE
 };
 
+inline constexpr auto SCREEN_LEFT_BOUND = -2500;
+inline constexpr auto SCREEN_RIGHT_BOUND = 2500;
+inline constexpr auto SCREEN_UPPER_BOUND = -2500;
+inline constexpr auto SCREEN_LOWER_BOUND = 2500;
+
 template <typename T = std::mt19937, size_t N = T::state_size>
 inline auto GetRandomSeededEngine() -> typename std::enable_if<N != 0, T>::type
 {
@@ -56,4 +61,25 @@ inline bool operator==(const Color& color1, const Color& color2)
 		color1.g == color2.g &&
 		color1.b == color2.b &&
 		color1.a == color2.a;
+}
+
+inline constexpr bool CheckBound(const glm::vec2& position)
+{
+	return position.x > SCREEN_RIGHT_BOUND ||
+		position.x < SCREEN_LEFT_BOUND ||
+		position.y < SCREEN_UPPER_BOUND ||
+		position.y > SCREEN_LOWER_BOUND;
+}
+
+inline Vector2 ToRaylibVector2(const glm::vec2& vec)
+{
+	Vector2 _vec;
+	_vec.x = vec.x;
+	_vec.y = vec.y;
+	return _vec;
+}
+
+inline glm::vec2 ToGlmVector2(const Vector2& vec)
+{
+	return glm::vec2(vec.x, vec.y);
 }

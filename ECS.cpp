@@ -97,6 +97,11 @@ void Entity::DetachFromScene()
 	CurrentScene = nullptr;
 }
 
+const std::string& Entity::GetName() const noexcept
+{
+	return mName;
+}
+
 Entity& Entity::operator=(Entity&& entity) noexcept
 {
 	if (&entity == this) return *this;
@@ -115,6 +120,11 @@ Entity& Entity::operator=(Entity&& entity) noexcept
 
 void Entity::Update(float deltaTime)
 {
+	if (Parent)
+	{
+		Position = Parent->Position + RelativePosition;
+	}
+
 	for (auto& component : mComponents) {
 		component->Update(deltaTime);
 	}
@@ -152,58 +162,63 @@ Scene::~Scene()
 void Scene::Initialize()
 {
 	for (auto& entity : mEntities)
-		entity.Initialize();
+		entity->Initialize();
 }
 
 void Scene::Update(float deltaTime)
 {
 	for (auto& entity : mEntities)
-		entity.Update(deltaTime);
+		entity->Update(deltaTime);
 }
 
 void Scene::Render()
 {
 	for (auto& entity : mEntities)
-		entity.Render();
+		entity->Render();
 }
 
 Entity* Scene::AddEntity()
 {
-	Entity& entity = mEntities.emplace_back(Entity());
-	entity.CurrentScene = this;
-	return &entity;
+	mEntities.emplace_back(std::make_unique<Entity>());
+	auto entity = mEntities.rbegin();
+	entity->get()->CurrentScene = this;
+	return entity->get();
 }
 
 Entity* Scene::AddEntity(std::string_view name)
 {
-	Entity& entity = mEntities.emplace_back(Entity(name));
-	entity.CurrentScene = this;
-	return &entity;
+	mEntities.emplace_back(std::make_unique<Entity>(name));
+	auto entity = mEntities.rbegin();
+	entity->get()->CurrentScene = this;
+	return entity->get();
 }
 
-Entity* Scene::AddEntity(Entity entity)
+Entity* Scene::AddEntity(std::unique_ptr<Entity>& entity)
 {
-	Entity& _entity = mEntities.emplace_back(std::move(entity));
-	_entity.CurrentScene = this;
-	return &_entity;
+	mEntities.emplace_back(std::move(entity));
+	auto _entity = mEntities.rbegin();
+	_entity->get()->CurrentScene = this;
+	return _entity->get();
 }
 
 Entity* Scene::GetEntity(std::string_view name)
 {
 	auto iter = std::find_if(mEntities.begin(), mEntities.end(),
-		[&](const Entity& entity) {
-			return entity.mName == name.data();
+		[&](const std::unique_ptr<Entity>& entity) {
+			return entity->mName == name.data();
 		});
 
-	return &(*iter);
+	return iter->get();
 }
 
 void Scene::RemoveEntity(std::string_view name)
 {
-	std::remove_if(mEntities.begin(), mEntities.end(),
-		[&](const Entity& entity) {
-			return entity.mName == name.data();
+	auto iter = std::remove_if(mEntities.begin(), mEntities.end(),
+		[&](const std::unique_ptr<Entity>& entity) {
+			return entity->mName == name.data();
 		});
+
+	mEntities.erase(iter, mEntities.end());
 }
 
 Scene& Scene::operator=(Scene&& scene) noexcept
