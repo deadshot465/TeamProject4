@@ -6,6 +6,7 @@
 #include "ConfigurationManager.h"
 #include "Controller.h"
 #include "Helper.h"
+#include "MapChipManager.h"
 #include "Primitives.h"
 
 GameScene::GameScene() : Scene()
@@ -30,7 +31,7 @@ void GameScene::Initialize()
 
 	auto collider = std::make_unique<CircleCollider>("player-collider");
 	mPlayerEntity->AddComponent(collider);
-	auto controller = std::make_unique<Controller>(10.0f);
+	auto controller = std::make_unique<PlayerController>(10.0f);
 	mPlayerEntity->AddComponent(controller);
 	
 	std::string_view file_names[] = {
@@ -47,22 +48,13 @@ void GameScene::Initialize()
 	animator->Play(1, "run-right");
 	mPlayerEntity->AddComponent(animator);
 
-	// Shield
-	mShieldEntity = this->AddEntity("shield-entity");
-	mShieldEntity->Parent = mPlayerEntity;
-	auto shield_controller = std::make_unique<ShieldController>(65);
-	mShieldEntity->AddComponent(shield_controller);
-	
-	auto shield_animator = std::make_unique<Animator>("./sprite/shield_right.png", 1, 1);
-	shield_animator->SetAnimation(0, "none", { 0 });
-	shield_animator->Play(0, "none");
-	mShieldEntity->AddComponent(shield_animator);
-
-	// TODO: Shield's collider is not in the correct position. Assign to: Chou.
-	auto shield_collider = std::make_unique<CircleCollider>("shield-collider", 32);
-	mShieldEntity->AddComponent(shield_collider);
+	SetupShield();
 
 	Scene::Initialize();
+
+	MapChipManager::LoadMapChip("./map/title_side.csv", "./sprite/font.png", "TitleSide", 10, 10);
+	MapChipManager::LoadMapChip("./map/title_floor.csv", "./sprite/map.png", "TitleFloor", 11, 1);
+	MapChipManager::LoadMapChip("./map/title_shadow.csv", "./sprite/map.png", "TitleShadow", 11, 1);
 
 	mInitialized = true;
 }
@@ -95,6 +87,10 @@ void GameScene::Render()
 {
 	BeginDrawing();
 
+	MapChipManager::DrawMapChips("TitleFloor");
+	MapChipManager::DrawMapChips("TitleSide");
+	MapChipManager::DrawMapChips("TitleShadow");
+
 	/*DrawText("FUCK OFF!!!", 190, 200, 20, LIGHTGRAY);
 	DrawText("FUCK OFF!!!", 380, 300, 30, LIGHTGRAY);
 	DrawText("FUCK OFF!!!", 570, 400, 40, LIGHTGRAY);
@@ -103,6 +99,26 @@ void GameScene::Render()
 	Scene::Render();
 
 	EndDrawing();
+}
+
+void GameScene::SetupShield()
+{
+	// Shield
+	mShieldEntity = this->AddEntity("shield-entity");
+	mShieldEntity->Parent = mPlayerEntity;
+	auto shield_controller = std::make_unique<ShieldController>(50);
+	mShieldEntity->AddComponent(shield_controller);
+
+	auto shield_animator = std::make_unique<Animator>("./sprite/shield.png", 2, 1);
+	shield_animator->SetAnimation(0, "none", { 0 });
+	shield_animator->Play(0, "none");
+	mShieldEntity->AddComponent(shield_animator);
+
+	auto shield_collider = std::make_unique<CircleCollider>("shield-collider", 32.0f);
+	mShieldEntity->AddComponent(shield_collider);
+
+	/*auto shield_circle = std::make_unique<Primitives::Circle>(GetRandomString(10), 32.0f);
+	mShieldEntity->AddComponent(shield_circle);*/
 }
 
 void GameScene::GenerateEnemies(float deltaTime)

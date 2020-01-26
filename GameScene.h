@@ -17,6 +17,7 @@ public:
 	virtual void Render() override;
 
 private:
+	void SetupShield();
 	void GenerateEnemies(float deltaTime);
 	std::vector<Collider*> GetAllEnemyColliders() const noexcept;
 

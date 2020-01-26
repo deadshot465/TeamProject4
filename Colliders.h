@@ -1,7 +1,3 @@
-//
-// Created by 周哲輝 on 2020/01/16.
-//
-
 #ifndef TEAMPROJECT4_CIRCLECOLLIDER_H
 #define TEAMPROJECT4_CIRCLECOLLIDER_H
 #include "ECS.h"

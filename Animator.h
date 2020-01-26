@@ -22,7 +22,7 @@ public:
 	void SetAnimation(size_t textureIndex, std::string_view animationName,
 		const std::vector<size_t>& animationIndices, int frameSpeed = 8);
 
-	void Play(size_t textureIndex, std::string_view animationName) noexcept;
+	void Play(size_t textureIndex, std::string_view animationName);
 
 	void SetAngle(float angle);
 
@@ -76,8 +76,8 @@ inline Animator::Animator(const std::string_view(&fileNames)[N], int (&xCount)[N
 		mTextures[i].Texture = LoadTexture(fileNames[i].data());
 		mTextures[i].FrameSize.x = 0;
 		mTextures[i].FrameSize.y = 0;
-		mTextures[i].FrameSize.width = mTextures[i].Texture.width / xCount[i];
-		mTextures[i].FrameSize.height = mTextures[i].Texture.height / yCount[i];
+		mTextures[i].FrameSize.width = static_cast<float>(mTextures[i].Texture.width / xCount[i]);
+		mTextures[i].FrameSize.height = static_cast<float>(mTextures[i].Texture.height / yCount[i]);
 
 		mTextures[i].Animations.resize(yCount[i] * xCount[i]);
 

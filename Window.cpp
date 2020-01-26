@@ -1,6 +1,7 @@
 #include "Window.h"
 #include <memory>
 #include "ConfigurationManager.h"
+#include "MapChipManager.h"
 #include "Primitives.h"
 
 Window::Window(std::string_view title, int width, int height)
@@ -12,12 +13,14 @@ Window::Window(std::string_view title, int width, int height)
 
 	SetTargetFPS(60);
 	ConfigurationManager::SetViewport(width, height);
+	MapChipManager::Initialize();
 	
 	mGameScene.Initialize();
 }
 
 Window::~Window()
 {
+	MapChipManager::Release();
 	CloseWindow();
 }
 

@@ -1,12 +1,12 @@
 #pragma once
 #include "ECS.h"
 
-class Controller :
+class PlayerController :
 	public Component
 {
 public:
-	Controller(float speed);
-	~Controller();
+	PlayerController(float speed);
+	~PlayerController();
 
 	// Component ‚ğ‰î‚µ‚ÄŒp³‚³‚ê‚Ü‚µ‚½
 	virtual void Initialize() override;
@@ -14,6 +14,12 @@ public:
 	virtual void Render() override;
 
 	float Speed = 0.0f;
+
+private:
+	void HandleShield();
+	void ClampToScreenSize();
+
+	bool mAttackFlag = false;
 };
 
 class EnemyController
@@ -47,12 +53,11 @@ public:
 	ShieldController(int offset);
 	~ShieldController() = default;
 
+	int Offset = 0;
+
 protected:
 	// Component ‚ğ‰î‚µ‚ÄŒp³‚³‚ê‚Ü‚µ‚½
 	virtual void Initialize() override;
 	virtual void Update(float deltaTime) override;
 	virtual void Render() override;
-
-private:
-	int mOffset = 0;
 };

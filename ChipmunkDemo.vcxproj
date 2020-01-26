@@ -163,6 +163,7 @@
     <ClCompile Include="ECS.cpp" />
     <ClCompile Include="GameScene.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="MapChipManager.cpp" />
     <ClCompile Include="Primitives.cpp" />
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
@@ -175,6 +176,7 @@
     <ClInclude Include="ECS.h" />
     <ClInclude Include="GameScene.h" />
     <ClInclude Include="Helper.h" />
+    <ClInclude Include="MapChipManager.h" />
     <ClInclude Include="Primitives.h" />
     <ClInclude Include="Window.h" />
   </ItemGroup>

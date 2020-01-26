@@ -1,7 +1,3 @@
-//
-// Created by 周哲輝 on 2020/01/16.
-//
-
 #include "Colliders.h"
 #include <cassert>
 

@@ -18,7 +18,7 @@ Component::Component(const Component& component)
 
 Component::Component(Component&& component) noexcept
 {
-	mName = component.mName;
+	mName = std::move(component.mName);
 	mEntity = component.mEntity;
 
 	component.mName.clear();
@@ -39,7 +39,7 @@ Component& Component::operator=(Component&& component) noexcept
 {
 	if (&component == this) return *this;
 
-	mName = component.mName;
+	mName = std::move(component.mName);
 	mEntity = component.mEntity;
 
 	component.mName.clear();
@@ -58,7 +58,7 @@ Entity::Entity(std::string_view name) : mName(name)
 
 Entity::Entity(Entity&& entity) noexcept
 {
-	mName = entity.mName;
+	mName = std::move(entity.mName);
 	CurrentScene = entity.CurrentScene;
 	std::move(entity.mComponents.begin(), entity.mComponents.end(), mComponents.begin());
 
@@ -81,10 +81,10 @@ void Entity::Initialize()
 
 void Entity::RemoveComponent(std::string_view name)
 {
-	std::remove_if(mComponents.begin(), mComponents.end(),
+	mComponents.erase(std::remove_if(mComponents.begin(), mComponents.end(),
 		[&](const std::unique_ptr<Component>& component) {
 			return component->mName == name.data();
-		});
+		}), mComponents.end());
 }
 
 void Entity::AttachToScene(Scene* scene)
@@ -107,7 +107,7 @@ Entity& Entity::operator=(Entity&& entity) noexcept
 	if (&entity == this) return *this;
 	if (!mComponents.empty()) mComponents.clear();
 
-	mName = entity.mName;
+	mName = std::move(entity.mName);
 	CurrentScene = entity.CurrentScene;
 	std::move(entity.mComponents.begin(), entity.mComponents.end(), mComponents.begin());
 
@@ -137,17 +137,17 @@ void Entity::Render()
 	}
 }
 
-Scene::Scene() : mName(GetRandomString(5))
+Scene::Scene() : mName(GetRandomString(5)), mInitialized(false)
 {
 }
 
-Scene::Scene(std::string_view name) : mName(name)
+Scene::Scene(std::string_view name) : mName(name), mInitialized(false)
 {
 }
 
 Scene::Scene(Scene&& scene) noexcept
+	: mName(std::move(scene.mName)), mInitialized(std::move(scene.mInitialized))
 {
-	mName = scene.mName;
 	std::move(scene.mEntities.begin(), scene.mEntities.end(), mEntities.begin());
 
 	scene.mName = "";
@@ -226,16 +226,11 @@ Scene& Scene::operator=(Scene&& scene) noexcept
 	if (&scene == this) return *this;
 	if (!mEntities.empty()) mEntities.clear();
 
-	mName = scene.mName;
+	mName = std::move(scene.mName);
 	std::move(scene.mEntities.begin(), scene.mEntities.end(), mEntities.begin());
 
 	scene.mName = "";
 	scene.mEntities.clear();
 
 	return *this;
-}
-
-bool Scene::IsInitialized() const noexcept
-{
-	return mInitialized;
 }

@@ -109,7 +109,7 @@ public:
 	Scene& operator=(const Scene& scene) = delete;
 	Scene& operator=(Scene&& scene) noexcept;
 
-	bool IsInitialized() const noexcept;
+	constexpr bool IsInitialized() const noexcept { return mInitialized; }
 
 protected:
 	std::list<std::unique_ptr<Entity>> mEntities =

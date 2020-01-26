@@ -59,5 +59,5 @@ void Primitives::Rectangle::Render()
 {
 	assert(mEntity);
 
-	DrawRectangle(mEntity->Position.x, mEntity->Position.y, Width, Height, FillColor);
+	DrawRectangle(static_cast<int>(mEntity->Position.x), static_cast<int>(mEntity->Position.y), Width, Height, FillColor);
 }
