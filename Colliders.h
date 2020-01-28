@@ -17,6 +17,7 @@ protected:
     virtual void Update(float deltaTime) override = 0;
     virtual void Render() override = 0;
    
+    friend class CollisionSystem;
 };
 
 class CircleCollider
@@ -28,6 +29,7 @@ public:
     ~CircleCollider();
 
     virtual bool CheckCollision(const Collider& other) const override;
+    bool CheckRectangleCollision(const Collider& other) const noexcept;
 
     float Radius = 50.0f;
 
@@ -35,7 +37,24 @@ protected:
     virtual void Initialize() override;
     virtual void Update(float deltaTime) override;
     virtual void Render() override;
+};
 
+class RectangleCollider
+    : public Collider
+{
+public:
+    RectangleCollider();
+    RectangleCollider(std::string_view name, const Rectangle& rectangle);
+    ~RectangleCollider();
+
+    // Collider ÇâÓÇµÇƒåpè≥Ç≥ÇÍÇ‹ÇµÇΩ
+    virtual bool CheckCollision(const Collider& other) const override;
+
+    Rectangle RectangleBox = {};
+protected:
+    virtual void Initialize() override;
+    virtual void Update(float deltaTime) override;
+    virtual void Render() override;
 };
 
 

@@ -75,6 +75,7 @@ public:
 	glm::vec2 RelativePosition = {};
 	Entity* Parent = nullptr;
 	Scene* CurrentScene = nullptr;
+	bool Active = true;
 
 private:
 	std::vector<std::unique_ptr<Component>> mComponents =

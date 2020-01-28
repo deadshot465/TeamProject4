@@ -63,6 +63,8 @@ void MapChipManager::DrawMapChips(std::string_view mapName)
 	static const auto screen_width = ConfigurationManager::GetWidth();
 	static const auto screen_height = ConfigurationManager::GetHeight();
 
+	bool is_colliders_empty = mMaps[mapName.data()].Colliders.empty();
+
 	float screen_x = 0;
 	float screen_y = 0;
 	Vector2 position = {};
@@ -77,11 +79,25 @@ void MapChipManager::DrawMapChips(std::string_view mapName)
 			}
 			position = { screen_x, screen_y };
 			DrawTextureRec(ptr->Map, ptr->Chips[x], position, WHITE);
+			if (is_colliders_empty && x == 2)
+			{
+				Rectangle rectangle = {};
+				rectangle.x = position.x;
+				rectangle.y = position.y;
+				rectangle.width = ptr->Chips[x].width;
+				rectangle.height = ptr->Chips[x].height;
+				mMaps[mapName.data()].Colliders.emplace_back(GetRandomString(10), rectangle);
+			}
 			screen_x += ptr->Chips[x].width;
 		}
 		screen_x = 0;
 		screen_y += ptr->Chips[0].height;
 	}
+}
+
+std::vector<RectangleCollider>& MapChipManager::GetAllColliders(std::string_view mapName)
+{
+	return mMaps[mapName.data()].Colliders;
 }
 
 MapChipMap MapChipManager::ReadMap(std::string_view name)

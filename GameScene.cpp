@@ -26,35 +26,14 @@ GameScene::~GameScene()
 
 void GameScene::Initialize()
 {
-	mPlayerEntity = this->AddEntity("player-entity");
-	mPlayerEntity->Position = glm::vec2(512, 384);
-
-	auto collider = std::make_unique<CircleCollider>("player-collider");
-	mPlayerEntity->AddComponent(collider);
-	auto controller = std::make_unique<PlayerController>(10.0f);
-	mPlayerEntity->AddComponent(controller);
-	
-	std::string_view file_names[] = {
-		"./sprite/player_normal.png",
-		"./sprite/player_run_right.png"
-	};
-
-	int x_count[] = { 4, 7 };
-	int y_count[] = { 1, 1 };
-
-	auto animator = std::make_unique<Animator>(file_names, x_count, y_count);
-	animator->SetAnimation(0, "normal", { 0, 1, 2, 3 });
-	animator->SetAnimation(1, "run-right", { 0, 1, 2, 3, 4, 5, 6 });
-	animator->Play(1, "run-right");
-	mPlayerEntity->AddComponent(animator);
-
+	SetupPlayer();
 	SetupShield();
 
 	Scene::Initialize();
 
-	MapChipManager::LoadMapChip("./map/title_side.csv", "./sprite/font.png", "TitleSide", 10, 10);
-	MapChipManager::LoadMapChip("./map/title_floor.csv", "./sprite/map.png", "TitleFloor", 11, 1);
-	MapChipManager::LoadMapChip("./map/title_shadow.csv", "./sprite/map.png", "TitleShadow", 11, 1);
+	MapChipManager::LoadMapChip("./map/title_side.csv", "./sprite/map.png", "TitleSide", 11, 5);
+	MapChipManager::LoadMapChip("./map/title_floor.csv", "./sprite/map.png", "TitleFloor", 11, 5);
+	MapChipManager::LoadMapChip("./map/title_shadow.csv", "./sprite/map.png", "TitleShadow", 11, 5);
 
 	mInitialized = true;
 }
@@ -79,7 +58,7 @@ void GameScene::Update(float deltaTime)
 
 	auto shield_collider = mShieldEntity->GetComponent<CircleCollider>();
 	CircleCollider object;
-	auto res = CollisionSystem::CheckCollision(*shield_collider, GetAllEnemyColliders(), &object);
+	auto res = CollisionSystem::CheckShieldCollision(shield_collider, GetAllEnemyColliders(), &object);
 	if (res) std::cout << "Collision Detected.\n";
 }
 
@@ -91,14 +70,38 @@ void GameScene::Render()
 	MapChipManager::DrawMapChips("TitleSide");
 	MapChipManager::DrawMapChips("TitleShadow");
 
-	/*DrawText("FUCK OFF!!!", 190, 200, 20, LIGHTGRAY);
-	DrawText("FUCK OFF!!!", 380, 300, 30, LIGHTGRAY);
-	DrawText("FUCK OFF!!!", 570, 400, 40, LIGHTGRAY);
-	DrawText("FUCK OFF!!!", 760, 500, 50, LIGHTGRAY);*/
-
 	Scene::Render();
 
 	EndDrawing();
+}
+
+void GameScene::SetupPlayer()
+{
+	mPlayerEntity = this->AddEntity("player-entity");
+	mPlayerEntity->Position = glm::vec2(512, 384);
+
+	auto collider = std::make_unique<CircleCollider>("player-collider");
+	mPlayerEntity->AddComponent(collider);
+	auto controller = std::make_unique<PlayerController>(10.0f);
+	mPlayerEntity->AddComponent(controller);
+
+	std::string_view file_names[] = {
+		"./sprite/player_normal_right.png",
+		"./sprite/player_run_right.png",
+		"./sprite/player_normal_left.png",
+		"./sprite/player_run_left.png"
+	};
+
+	int x_count[] = { 4, 7, 4, 7 };
+	int y_count[] = { 1, 1, 1, 1 };
+
+	auto animator = std::make_unique<Animator>(file_names, x_count, y_count);
+	animator->SetAnimation(0, "normal-right", { 0, 1, 2, 3 });
+	animator->SetAnimation(1, "run-right", { 0, 1, 2, 3, 4, 5, 6 });
+	animator->SetAnimation(2, "normal-left", { 0, 1, 2, 3 });
+	animator->SetAnimation(3, "run-left", { 0, 1, 2, 3, 4, 5, 6 });
+	animator->Play(0, "normal-right");
+	mPlayerEntity->AddComponent(animator);
 }
 
 void GameScene::SetupShield()
@@ -163,9 +166,9 @@ void GameScene::GenerateEnemies(float deltaTime)
 	}
 }
 
-std::vector<Collider*> GameScene::GetAllEnemyColliders() const noexcept
+std::vector<CircleCollider*> GameScene::GetAllEnemyColliders() const noexcept
 {
-	auto colliders = std::vector<Collider*>(mEnemyEntities.size());
+	auto colliders = std::vector<CircleCollider*>(mEnemyEntities.size());
 	std::transform(mEnemyEntities.cbegin(), mEnemyEntities.cend(), colliders.begin(),
 		[&](Entity* entity) {
 			return entity->GetComponent<CircleCollider>();

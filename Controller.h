@@ -1,5 +1,6 @@
 #pragma once
 #include "ECS.h"
+#include "Animator.h"
 
 class PlayerController :
 	public Component
@@ -15,11 +16,19 @@ public:
 
 	float Speed = 0.0f;
 
+	constexpr bool IsAttacking() const noexcept { return mAttackFlag; }
+
 private:
 	void HandleShield();
 	void ClampToScreenSize();
 
 	bool mAttackFlag = false;
+
+#define PLAYER_ANIMATOR (mEntity->GetComponent<Animator>())
+#define NORMAL_RIGHT 0, "normal-right"
+#define RUN_RIGHT 1, "run-right"
+#define NORMAL_LEFT 2, "normal-left"
+#define RUN_LEFT 3, "run-left"
 };
 
 class EnemyController
@@ -29,7 +38,7 @@ public:
 	EnemyController(float speed);
 	~EnemyController();
 
-	bool ShouldDestroy() const noexcept;
+	constexpr bool ShouldDestroy() const noexcept { return mShouldDestroy; }
 
 	float Speed = 0.0f;
 	glm::vec2 Velocity = {};

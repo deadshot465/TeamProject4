@@ -11,16 +11,13 @@ Component::Component(std::string_view name)
 }
 
 Component::Component(const Component& component)
+	: mName(component.mName), mEntity(component.mEntity)
 {
-	mName = component.mName;
-	mEntity = component.mEntity;
 }
 
 Component::Component(Component&& component) noexcept
+	: mName(std::move(component.mName)), mEntity(std::move(component.mEntity))
 {
-	mName = std::move(component.mName);
-	mEntity = component.mEntity;
-
 	component.mName.clear();
 	component.mEntity = nullptr;
 }
@@ -39,11 +36,8 @@ Component& Component::operator=(Component&& component) noexcept
 {
 	if (&component == this) return *this;
 
-	mName = std::move(component.mName);
-	mEntity = component.mEntity;
-
-	component.mName.clear();
-	component.mEntity = nullptr;
+	std::swap(mName, component.mName);
+	std::swap(mEntity, component.mEntity);
 
 	return *this;
 }
@@ -57,11 +51,9 @@ Entity::Entity(std::string_view name) : mName(name)
 }
 
 Entity::Entity(Entity&& entity) noexcept
+	: mName(std::move(entity.mName)), CurrentScene(std::move(entity.CurrentScene)),
+	mComponents(std::move(entity.mComponents))
 {
-	mName = std::move(entity.mName);
-	CurrentScene = entity.CurrentScene;
-	std::move(entity.mComponents.begin(), entity.mComponents.end(), mComponents.begin());
-
 	entity.mName = "";
 	entity.CurrentScene = nullptr;
 	entity.mComponents.clear();
@@ -107,12 +99,10 @@ Entity& Entity::operator=(Entity&& entity) noexcept
 	if (&entity == this) return *this;
 	if (!mComponents.empty()) mComponents.clear();
 
-	mName = std::move(entity.mName);
-	CurrentScene = entity.CurrentScene;
-	std::move(entity.mComponents.begin(), entity.mComponents.end(), mComponents.begin());
+	std::swap(mName, entity.mName);
+	std::swap(CurrentScene, entity.CurrentScene);
+	mComponents = std::move(entity.mComponents);
 
-	entity.mName = "";
-	entity.CurrentScene = nullptr;
 	entity.mComponents.clear();
 
 	return *this;
@@ -146,11 +136,11 @@ Scene::Scene(std::string_view name) : mName(name), mInitialized(false)
 }
 
 Scene::Scene(Scene&& scene) noexcept
-	: mName(std::move(scene.mName)), mInitialized(std::move(scene.mInitialized))
+	: mName(std::move(scene.mName)), mInitialized(std::move(scene.mInitialized)),
+	mEntities(std::move(scene.mEntities))
 {
-	std::move(scene.mEntities.begin(), scene.mEntities.end(), mEntities.begin());
-
 	scene.mName = "";
+	scene.mInitialized = false;
 	scene.mEntities.clear();
 }
 
@@ -226,10 +216,8 @@ Scene& Scene::operator=(Scene&& scene) noexcept
 	if (&scene == this) return *this;
 	if (!mEntities.empty()) mEntities.clear();
 
-	mName = std::move(scene.mName);
-	std::move(scene.mEntities.begin(), scene.mEntities.end(), mEntities.begin());
-
-	scene.mName = "";
+	std::swap(mName, scene.mName);
+	mEntities = std::move(scene.mEntities);
 	scene.mEntities.clear();
 
 	return *this;

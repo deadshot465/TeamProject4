@@ -17,9 +17,10 @@ public:
 	virtual void Render() override;
 
 private:
+	void SetupPlayer();
 	void SetupShield();
 	void GenerateEnemies(float deltaTime);
-	std::vector<Collider*> GetAllEnemyColliders() const noexcept;
+	std::vector<CircleCollider*> GetAllEnemyColliders() const noexcept;
 
 	Entity* mPlayerEntity = nullptr;
 	Entity* mShieldEntity = nullptr;

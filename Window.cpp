@@ -6,7 +6,7 @@
 
 Window::Window(std::string_view title, int width, int height)
 	: mWidth(width), mHeight(height),
-	mGameScene()
+	mGameScene{ "game-scene" }
 {
 	SetConfigFlags(ConfigFlag::FLAG_MSAA_4X_HINT);
 	InitWindow(width, height, title.data());

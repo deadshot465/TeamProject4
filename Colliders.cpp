@@ -47,6 +47,17 @@ bool CircleCollider::CheckCollision(const Collider& other) const
     return CheckCollisionCircles(center, this->Radius, other_center, _other.Radius);
 }
 
+bool CircleCollider::CheckRectangleCollision(const Collider& other) const noexcept
+{
+    assert(mEntity);
+    if (!other.Enabled) return false;
+
+    Vector2 center = { mEntity->Position.x, mEntity->Position.y };
+    const RectangleCollider& _other = dynamic_cast<const RectangleCollider&>(other);
+
+    return CheckCollisionCircleRec(center, this->Radius, _other.RectangleBox);
+}
+
 Collider::Collider()
     : Component()
 {
@@ -54,5 +65,37 @@ Collider::Collider()
 
 Collider::Collider(std::string_view name)
     : Component(name)
+{
+}
+
+RectangleCollider::RectangleCollider()
+    : Collider()
+{
+}
+
+RectangleCollider::RectangleCollider(std::string_view name, const Rectangle& rectangle)
+    : Collider(name), RectangleBox(rectangle)
+{
+    
+}
+
+RectangleCollider::~RectangleCollider()
+{
+}
+
+bool RectangleCollider::CheckCollision(const Collider& other) const
+{
+    return false;
+}
+
+void RectangleCollider::Initialize()
+{
+}
+
+void RectangleCollider::Update(float deltaTime)
+{
+}
+
+void RectangleCollider::Render()
 {
 }

@@ -1,9 +1,10 @@
 #include "Controller.h"
 #include <iostream>
 #include <cassert>
-#include "Animator.h"
 #include "ConfigurationManager.h"
 #include "Colliders.h"
+#include "CollisionSystem.h"
+#include "MapChipManager.h"
 
 PlayerController::PlayerController(float speed)
 	: Speed(speed)
@@ -21,8 +22,9 @@ void PlayerController::Initialize()
 void PlayerController::Update(float deltaTime)
 {
 	assert(mEntity);
+	const auto& animator = PLAYER_ANIMATOR;
+	animator->Play(NORMAL_RIGHT);
 
-	// TODO: The moving speed is not correct. Assign to: Lee.
 	auto adjusted_speed = Speed / std::sqrtf(2.0f);
 
 	HandleShield();
@@ -30,6 +32,7 @@ void PlayerController::Update(float deltaTime)
 
 	if (IsKeyDown(KEY_LEFT))
 	{
+		animator->Play(RUN_LEFT);
 		if (IsKeyDown(KEY_UP) || IsKeyDown(KEY_DOWN))
 		{
 			mEntity->Position.x -= adjusted_speed;
@@ -38,9 +41,9 @@ void PlayerController::Update(float deltaTime)
 		else
 			mEntity->Position.x -= Speed;
 	}
-
-	if (IsKeyDown(KEY_RIGHT))
+	else if (IsKeyDown(KEY_RIGHT))
 	{
+		animator->Play(RUN_RIGHT);
 		if (IsKeyDown(KEY_UP) || IsKeyDown(KEY_DOWN))
 		{
 			mEntity->Position.x += adjusted_speed;
@@ -49,27 +52,39 @@ void PlayerController::Update(float deltaTime)
 		else
 			mEntity->Position.x += Speed;
 	}
-
-	if (IsKeyDown(KEY_UP))
+	else if (IsKeyDown(KEY_UP))
 	{
 		if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_RIGHT))
 		{
 			mEntity->Position.y -= adjusted_speed;
 			mEntity->Position.x += IsKeyDown(KEY_LEFT) ? -adjusted_speed : adjusted_speed;
+			if (IsKeyDown(KEY_LEFT))
+				animator->Play(RUN_LEFT);
+			else
+				animator->Play(RUN_RIGHT);
 		}
 		else
+		{
 			mEntity->Position.y -= Speed;
+			animator->Play(RUN_RIGHT);
+		}
 	}
-
-	if (IsKeyDown(KEY_DOWN))
+	else if (IsKeyDown(KEY_DOWN))
 	{
 		if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_RIGHT))
 		{
 			mEntity->Position.y += adjusted_speed;
 			mEntity->Position.x += IsKeyDown(KEY_LEFT) ? -adjusted_speed : adjusted_speed;
+			if (IsKeyDown(KEY_LEFT))
+				animator->Play(RUN_LEFT);
+			else
+				animator->Play(RUN_RIGHT);
 		}
 		else
+		{
 			mEntity->Position.y += Speed;
+			animator->Play(RUN_RIGHT);
+		}
 	}
 
 	ClampToScreenSize();
@@ -83,51 +98,66 @@ void PlayerController::Render()
 void PlayerController::HandleShield()
 {
 	static int counter = 0;
-	constexpr float duration = 15.0f;
-	constexpr float offset = 200.0f;
+	constexpr float duration = 10.0f;
+	static constexpr float offset = 300.0f;
 	static auto dest_offset = glm::vec2();	
 	
 	if (mAttackFlag)
 	{
 		++counter;
+		auto collider = mEntity->GetComponent<CircleCollider>();
+		assert(collider);
+		auto res = CollisionSystem::CheckWallCollision(collider, MapChipManager::GetAllColliders("TitleSide"));
+		if (res)
+		{
+			mAttackFlag = false;
+			counter = 0;
+			mEntity->CurrentScene->GetEntity("shield-entity")->GetComponent<ShieldController>()->Enabled = true;
+			return;
+		}
 		mEntity->Position += dest_offset / duration;
+		ClampToScreenSize();
 	}
 
-	if (IsKeyDown(KEY_Z))
+	if (IsKeyDown(KEY_Z) && !mAttackFlag)
 	{
 		mAttackFlag = true;
 		dest_offset = glm::normalize(ToGlmVector2(GetMousePosition()) - mEntity->Position) * offset;
+		mEntity->CurrentScene->GetEntity("shield-entity")->GetComponent<ShieldController>()->Enabled = false;
 	}
 
 	if (counter >= duration)
 	{
 		mAttackFlag = false;
 		counter = 0;
+		mEntity->CurrentScene->GetEntity("shield-entity")->GetComponent<ShieldController>()->Enabled = true;
 	}
 }
 
 void PlayerController::ClampToScreenSize()
 {
-	constexpr int frame_width = 128;
-	constexpr int frame_height = 128;
-	constexpr float x_margin = frame_width / 4.0f;
-	constexpr float y_margin = frame_height / 4.0f;
-	const auto SCREEN_WIDTH = ConfigurationManager::GetWidth();
-	const auto SCREEN_HEIGHT = ConfigurationManager::GetHeight();
+	static constexpr int frame_width = 128;
+	static constexpr int frame_height = 128;
+	static constexpr float x_margin = frame_width / 4.0f;
+	static constexpr float y_margin = frame_height / 4.0f;
+	static constexpr float chip_size = 64.0f;
+	static const auto SCREEN_WIDTH = ConfigurationManager::GetWidth();
+	static const auto SCREEN_HEIGHT = ConfigurationManager::GetHeight();
 
-	if ((mEntity->Position.x - x_margin) < 0)
-		mEntity->Position.x = x_margin;
-	if ((mEntity->Position.x + x_margin) > SCREEN_WIDTH)
-		mEntity->Position.x = SCREEN_WIDTH - x_margin;
-	if ((mEntity->Position.y - y_margin) < 0)
-		mEntity->Position.y = y_margin;
-	if ((mEntity->Position.y + (y_margin * 2.0f)) > SCREEN_HEIGHT)
-		mEntity->Position.y = SCREEN_HEIGHT - (y_margin * 2.0f);
+	if ((mEntity->Position.x - x_margin) < chip_size)
+		mEntity->Position.x = x_margin + chip_size;
+	if ((mEntity->Position.x + x_margin) > SCREEN_WIDTH - chip_size)
+		mEntity->Position.x = SCREEN_WIDTH - x_margin - chip_size;
+	
+	if ((mEntity->Position.y - y_margin) < chip_size)
+		mEntity->Position.y = y_margin + chip_size;
+	if ((mEntity->Position.y + (y_margin * 2.0f)) > SCREEN_HEIGHT - (chip_size * 2))
+		mEntity->Position.y = SCREEN_HEIGHT - (y_margin * 2.0f) - (chip_size * 2);
 
 }
 
 EnemyController::EnemyController(float speed)
-	: Speed(speed)
+	: Speed(speed), mShouldDestroy(false)
 {
 }
 
@@ -142,12 +172,16 @@ void EnemyController::Initialize()
 void EnemyController::Update(float deltaTime)
 {
 	assert(mEntity);
-
 	auto collider = mEntity->GetComponent<CircleCollider>();
+	
+	// If the enemy has a parent entity, it means that it's already attached to the shield.
+	// We don't have to manually update the speed anymore.
 	if (mEntity->Parent)
 	{
 		return;
 	}
+
+	// If the collider is disabled, set the parent entity to the shield.
 	if (collider && !collider->Enabled)
 	{
 		mEntity->Parent = mEntity->CurrentScene->GetEntity("shield-entity");
@@ -155,6 +189,7 @@ void EnemyController::Update(float deltaTime)
 		return;
 	}
 
+	// If the speed is still being updated, follow the player until it's close to the player.
 	if (!mSpeedUpdateStopped)
 	{
 		mPlayerPosition = mEntity->CurrentScene->GetEntity("player-entity")->Position;
@@ -170,6 +205,7 @@ void EnemyController::Update(float deltaTime)
 		}
 	}
 
+	// If the enemy flies out of the bounds, set the destroy flag to true.
 	if (CheckBound(mEntity->Position))
 	{
 		mShouldDestroy = true;
@@ -180,11 +216,6 @@ void EnemyController::Update(float deltaTime)
 
 void EnemyController::Render()
 {
-}
-
-bool EnemyController::ShouldDestroy() const noexcept
-{
-	return mShouldDestroy;
 }
 
 ShieldController::ShieldController(int offset)
@@ -201,7 +232,11 @@ void ShieldController::Update(float deltaTime)
 {
 	assert(mEntity);
 	assert(mEntity->Parent);
+	
+	// If it's not enabled, it means that the player is dashing.
+	if (!Enabled) return;
 
+	// Constantly update the relative position (offset).
 	auto mouse_pos = ToGlmVector2(GetMousePosition());
 	auto direction = glm::normalize(mouse_pos - mEntity->Parent->Position);
 	mEntity->RelativePosition = direction * static_cast<float>(Offset);

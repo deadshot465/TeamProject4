@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <raylib.h>
 #include <vector>
+#include "Colliders.h"
 
 using MapChipMap = std::vector<std::vector<int>>;
 
@@ -23,6 +24,7 @@ struct MapInfo
 {
 	TagMapData* MapData;
 	MapChipMap ChipMap;
+	std::vector<RectangleCollider> Colliders;
 };
 
 class MapChipManager
@@ -37,6 +39,7 @@ public:
 	static void LoadMapChip(std::string_view csvFileName, std::string_view textureFileName, std::string_view mapName, size_t xCount, size_t yCount);
 
 	static void DrawMapChips(std::string_view mapName);
+	static std::vector<RectangleCollider>& GetAllColliders(std::string_view mapName);
 
 private:
 	static MapChipMap ReadMap(std::string_view name);
