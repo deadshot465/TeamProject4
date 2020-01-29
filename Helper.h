@@ -5,6 +5,11 @@
 #include <random>
 #include <raylib.h>
 
+enum class Scenes
+{
+	TitleScene, GameScene, End
+};
+
 inline constexpr Color ENEMY_COLORS[] = {
 	RED, GREEN, BLUE
 };

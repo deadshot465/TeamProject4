@@ -8,14 +8,15 @@
 #include "Helper.h"
 #include "MapChipManager.h"
 #include "Primitives.h"
+#include "SFX.h"
 
-GameScene::GameScene() : Scene()
+GameScene::GameScene() : SceneBase()
 {
 	
 }
 
 GameScene::GameScene(std::string_view name)
-	: Scene(name)
+	: SceneBase(name)
 {
 	
 }
@@ -26,24 +27,24 @@ GameScene::~GameScene()
 
 void GameScene::Initialize()
 {
-	SetupPlayer();
-	SetupShield();
+	SceneBase::Initialize();
 
-	Scene::Initialize();
-
-	MapChipManager::LoadMapChip("./map/title_side.csv", "./sprite/map.png", "TitleSide", 11, 5);
-	MapChipManager::LoadMapChip("./map/title_floor.csv", "./sprite/map.png", "TitleFloor", 11, 5);
-	MapChipManager::LoadMapChip("./map/title_shadow.csv", "./sprite/map.png", "TitleShadow", 11, 5);
+	MapChipManager::LoadMapChip("./map/stage_side.csv", "./sprite/map.png", "StageSide", 11, 5);
+	MapChipManager::LoadMapChip("./map/stage_floor.csv", "./sprite/map.png", "StageFloor", 11, 5);
+	MapChipManager::LoadMapChip("./map/stage_shadow.csv", "./sprite/map.png", "StageShadow", 11, 5);
 
 	mInitialized = true;
 }
 
 void GameScene::Update(float deltaTime)
 {
+	if (!mInitialized) return;
+
 	GenerateEnemies(deltaTime);
 
-	Scene::Update(deltaTime);
+	SceneBase::Update(deltaTime);
 
+	// Remove enemies that are out of range.
 	auto iter = mEnemyEntities.begin();
 	while (iter != mEnemyEntities.end())
 	{
@@ -56,72 +57,62 @@ void GameScene::Update(float deltaTime)
 			++iter;
 	}
 
+	// Shield collision
 	auto shield_collider = mShieldEntity->GetComponent<CircleCollider>();
 	CircleCollider object;
 	auto res = CollisionSystem::CheckShieldCollision(shield_collider, GetAllEnemyColliders(), &object);
-	if (res) std::cout << "Collision Detected.\n";
+
+	res = CollisionSystem::CheckWallCollision(shield_collider, MapChipManager::GetAllColliders("StageSide"));
+
+	if (res)
+	{
+		for (const auto& child : mShieldEntity->Children)
+		{
+			mEnemyEntities.erase(std::remove_if(mEnemyEntities.begin(), mEnemyEntities.end(), [&child](const Entity* entity) {
+				return entity == child;
+				}), mEnemyEntities.end());
+
+			this->RemoveEntity(child->GetName());
+		}
+		mShieldEntity->Children.clear();
+	}
+
+	/*iter = mEnemyEntities.begin();
+	while (iter != mEnemyEntities.end())
+	{
+		if ((*iter)->GetComponent<EnemyController>()->CurrentState !=
+			EnemyController::EnemyState::Attached)
+		{
+			++iter;
+			continue;
+		}
+
+		auto res = CollisionSystem::CheckWallCollision((*iter)
+			->GetComponent<CircleCollider>(), MapChipManager::GetAllColliders("TitleSide"));
+
+		if (res)
+		{
+			this->RemoveEntity((*iter)->GetName());
+			iter = mEnemyEntities.erase(iter);
+		}
+		else
+			++iter;
+	}*/
 }
 
 void GameScene::Render()
 {
+	if (!mInitialized) return;
+
 	BeginDrawing();
 
-	MapChipManager::DrawMapChips("TitleFloor");
-	MapChipManager::DrawMapChips("TitleSide");
-	MapChipManager::DrawMapChips("TitleShadow");
+	MapChipManager::DrawMapChips("StageFloor");
+	MapChipManager::DrawMapChips("StageSide");
+	MapChipManager::DrawMapChips("StageShadow");
 
-	Scene::Render();
+	SceneBase::Render();
 
 	EndDrawing();
-}
-
-void GameScene::SetupPlayer()
-{
-	mPlayerEntity = this->AddEntity("player-entity");
-	mPlayerEntity->Position = glm::vec2(512, 384);
-
-	auto collider = std::make_unique<CircleCollider>("player-collider");
-	mPlayerEntity->AddComponent(collider);
-	auto controller = std::make_unique<PlayerController>(10.0f);
-	mPlayerEntity->AddComponent(controller);
-
-	std::string_view file_names[] = {
-		"./sprite/player_normal_right.png",
-		"./sprite/player_run_right.png",
-		"./sprite/player_normal_left.png",
-		"./sprite/player_run_left.png"
-	};
-
-	int x_count[] = { 4, 7, 4, 7 };
-	int y_count[] = { 1, 1, 1, 1 };
-
-	auto animator = std::make_unique<Animator>(file_names, x_count, y_count);
-	animator->SetAnimation(0, "normal-right", { 0, 1, 2, 3 });
-	animator->SetAnimation(1, "run-right", { 0, 1, 2, 3, 4, 5, 6 });
-	animator->SetAnimation(2, "normal-left", { 0, 1, 2, 3 });
-	animator->SetAnimation(3, "run-left", { 0, 1, 2, 3, 4, 5, 6 });
-	animator->Play(0, "normal-right");
-	mPlayerEntity->AddComponent(animator);
-}
-
-void GameScene::SetupShield()
-{
-	// Shield
-	mShieldEntity = this->AddEntity("shield-entity");
-	mShieldEntity->Parent = mPlayerEntity;
-	auto shield_controller = std::make_unique<ShieldController>(50);
-	mShieldEntity->AddComponent(shield_controller);
-
-	auto shield_animator = std::make_unique<Animator>("./sprite/shield.png", 2, 1);
-	shield_animator->SetAnimation(0, "none", { 0 });
-	shield_animator->Play(0, "none");
-	mShieldEntity->AddComponent(shield_animator);
-
-	auto shield_collider = std::make_unique<CircleCollider>("shield-collider", 32.0f);
-	mShieldEntity->AddComponent(shield_collider);
-
-	/*auto shield_circle = std::make_unique<Primitives::Circle>(GetRandomString(10), 32.0f);
-	mShieldEntity->AddComponent(shield_circle);*/
 }
 
 void GameScene::GenerateEnemies(float deltaTime)
@@ -153,11 +144,29 @@ void GameScene::GenerateEnemies(float deltaTime)
 			auto controller = std::make_unique<EnemyController>(speed_rng(RANDOM_ENGINE));
 			enemy->AddComponent(controller);
 
-			Color color = ENEMY_COLORS[color_rng(RANDOM_ENGINE)];
-			auto circle = std::make_unique<Primitives::Circle>(GetRandomString(10), 25.0f, color);
-			enemy->AddComponent(circle);
+			//Color color = ENEMY_COLORS[color_rng(RANDOM_ENGINE)];
+			//auto circle = std::make_unique<Primitives::Circle>(GetRandomString(10), 25.0f, color);
+			//enemy->AddComponent(circle);
 
-			auto collider = std::make_unique<CircleCollider>(GetRandomString(10), 25.0f);
+			std::string_view file_names[] = {
+				"./sprite/monster_1_normal_right.png",
+				"./sprite/monster_1_run_right.png",
+				"./sprite/monster_1_normal_left.png",
+				"./sprite/monster_1_run_left.png"
+			};
+
+			int x_count[] = { 4, 4, 4, 4 };
+			int y_count[] = { 1, 1, 1, 1 };
+
+			auto animator = std::make_unique<Animator>(file_names, x_count, y_count);
+			animator->SetAnimation(0, "normal-right", { 0, 1, 2, 3 });
+			animator->SetAnimation(1, "run-right", { 0, 1, 2, 3 });
+			animator->SetAnimation(2, "normal-left", { 0, 1, 2, 3 });
+			animator->SetAnimation(3, "run-left", { 0, 1, 2, 3 });
+			animator->Play(1, "run-right");
+			enemy->AddComponent(animator);
+
+			auto collider = std::make_unique<CircleCollider>(GetRandomString(10));
 			enemy->AddComponent(collider);
 
 			timer_started = false;

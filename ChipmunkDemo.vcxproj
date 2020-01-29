@@ -165,6 +165,9 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MapChipManager.cpp" />
     <ClCompile Include="Primitives.cpp" />
+    <ClCompile Include="SceneBase.cpp" />
+    <ClCompile Include="SFX.cpp" />
+    <ClCompile Include="TitleScene.cpp" />
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -178,6 +181,9 @@
     <ClInclude Include="Helper.h" />
     <ClInclude Include="MapChipManager.h" />
     <ClInclude Include="Primitives.h" />
+    <ClInclude Include="SceneBase.h" />
+    <ClInclude Include="SFX.h" />
+    <ClInclude Include="TitleScene.h" />
     <ClInclude Include="Window.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

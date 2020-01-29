@@ -1,4 +1,5 @@
 #include "ECS.h"
+#include <cassert>
 
 Component::Component()
 	: mName(GetRandomString(10))
@@ -221,4 +222,10 @@ Scene& Scene::operator=(Scene&& scene) noexcept
 	scene.mEntities.clear();
 
 	return *this;
+}
+
+void Scene::OnSceneChanged(int sceneNo)
+{
+	assert(SceneChangeHandler);
+	SceneChangeHandler(sceneNo, WindowHandle);
 }

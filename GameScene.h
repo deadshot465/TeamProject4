@@ -2,10 +2,10 @@
 #include <list>
 #include <raylib.h>
 #include "Colliders.h"
-#include "ECS.h"
+#include "SceneBase.h"
 
 class GameScene :
-	public Scene
+	public SceneBase
 {
 public:
 	GameScene();
@@ -17,13 +17,8 @@ public:
 	virtual void Render() override;
 
 private:
-	void SetupPlayer();
-	void SetupShield();
 	void GenerateEnemies(float deltaTime);
 	std::vector<CircleCollider*> GetAllEnemyColliders() const noexcept;
-
-	Entity* mPlayerEntity = nullptr;
-	Entity* mShieldEntity = nullptr;
 	std::list<Entity*> mEnemyEntities{};
 };
 

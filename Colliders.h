@@ -25,13 +25,13 @@ class CircleCollider
 {
 public:
     CircleCollider();
-    CircleCollider(std::string_view name, float radius = 50.0f);
+    CircleCollider(std::string_view name, float radius = 64.0f);
     ~CircleCollider();
 
     virtual bool CheckCollision(const Collider& other) const override;
     bool CheckRectangleCollision(const Collider& other) const noexcept;
 
-    float Radius = 50.0f;
+    float Radius = 64.0f;
 
 protected:
     virtual void Initialize() override;

@@ -3,10 +3,13 @@
 #include <sstream>
 #include <cassert>
 #include "ConfigurationManager.h"
+#include "Helper.h"
 
 void MapChipManager::Initialize()
 {
-	mMapData.reserve(100);
+	mMapData.reserve(200);
+	mStartButton = RectangleCollider(GetRandomString(10), { 384, 0, 320, 64 });
+	mQuitButton = RectangleCollider(GetRandomString(10), { 384, 640, 256, 64 });
 }
 
 void MapChipManager::Release()
@@ -79,7 +82,7 @@ void MapChipManager::DrawMapChips(std::string_view mapName)
 			}
 			position = { screen_x, screen_y };
 			DrawTextureRec(ptr->Map, ptr->Chips[x], position, WHITE);
-			if (is_colliders_empty && x == 2)
+			if (is_colliders_empty && IsCollidableChip(x))
 			{
 				Rectangle rectangle = {};
 				rectangle.x = position.x;

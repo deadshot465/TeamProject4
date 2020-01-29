@@ -41,8 +41,19 @@ public:
 	static void DrawMapChips(std::string_view mapName);
 	static std::vector<RectangleCollider>& GetAllColliders(std::string_view mapName);
 
+	static const RectangleCollider& GetStartButton() noexcept { return mStartButton; }
+	static const RectangleCollider& GetQuitButton() noexcept { return mQuitButton; }
+
 private:
 	static MapChipMap ReadMap(std::string_view name);
+
+	static constexpr bool IsCollidableChip(int chipNo) noexcept
+	{
+		return chipNo == 1;
+	}
+
+	inline static RectangleCollider mStartButton = {};
+	inline static RectangleCollider mQuitButton = {};
 
 	inline static std::vector<TagMapData> mMapData;
 	inline static std::unordered_map<std::string, MapInfo> mMaps;

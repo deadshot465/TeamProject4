@@ -35,6 +35,11 @@ class EnemyController
 	: public Component
 {
 public:
+	enum class EnemyState
+	{
+		Initializing, Moving, Attached, Finalizing
+	};
+
 	EnemyController(float speed);
 	~EnemyController();
 
@@ -42,6 +47,7 @@ public:
 
 	float Speed = 0.0f;
 	glm::vec2 Velocity = {};
+	EnemyState CurrentState = {};
 	
 protected:
 	// Component ‚ð‰î‚µ‚ÄŒp³‚³‚ê‚Ü‚µ‚½
@@ -53,6 +59,12 @@ private:
 	glm::vec2 mPlayerPosition = {};
 	bool mSpeedUpdateStopped = false;
 	bool mShouldDestroy = false;
+
+#define ENEMY_ANIMATOR (mEntity->GetComponent<Animator>())
+#define NORMAL_RIGHT 0, "normal-right"
+#define RUN_RIGHT 1, "run-right"
+#define NORMAL_LEFT 2, "normal-left"
+#define RUN_LEFT 3, "run-left"
 };
 
 class ShieldController

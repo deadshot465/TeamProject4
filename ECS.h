@@ -3,6 +3,7 @@
 #include <glm/glm.hpp>
 #include <list>
 #include <memory>
+#include <set>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -76,6 +77,7 @@ public:
 	Entity* Parent = nullptr;
 	Scene* CurrentScene = nullptr;
 	bool Active = true;
+	std::set<Entity*> Children = std::set<Entity*>();
 
 private:
 	std::vector<std::unique_ptr<Component>> mComponents =
@@ -89,9 +91,13 @@ private:
 	friend class Scene;
 };
 
+class Window;
+
 class Scene
 {
 public:
+	using SceneHandler = void (*)(int, Window*);
+
 	Scene();
 	explicit Scene(std::string_view name);
 	Scene(const Scene& scene) = delete;
@@ -110,7 +116,12 @@ public:
 	Scene& operator=(const Scene& scene) = delete;
 	Scene& operator=(Scene&& scene) noexcept;
 
+	SceneHandler SceneChangeHandler = nullptr;
+	Window* WindowHandle = nullptr;
+	virtual void OnSceneChanged(int sceneNo);
+
 	constexpr bool IsInitialized() const noexcept { return mInitialized; }
+	const std::string& GetName() const noexcept { return mName; }
 
 protected:
 	std::list<std::unique_ptr<Entity>> mEntities =
