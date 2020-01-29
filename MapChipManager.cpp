@@ -8,8 +8,8 @@
 void MapChipManager::Initialize()
 {
 	mMapData.reserve(200);
-	mStartButton = RectangleCollider(GetRandomString(10), { 384, 0, 320, 64 });
-	mQuitButton = RectangleCollider(GetRandomString(10), { 384, 640, 256, 64 });
+	mStartButton = RectangleCollider(GetRandomString(10), { 512, 128, 320, 64 });
+	mQuitButton = RectangleCollider(GetRandomString(10), { 512, 768, 256, 64 });
 }
 
 void MapChipManager::Release()

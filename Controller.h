@@ -15,6 +15,8 @@ public:
 	virtual void Render() override;
 
 	float Speed = 0.0f;
+	int Hp = 6;
+	bool IsInvincible = false;
 
 	constexpr bool IsAttacking() const noexcept { return mAttackFlag; }
 
@@ -23,6 +25,7 @@ private:
 	void ClampToScreenSize();
 
 	bool mAttackFlag = false;
+	int mCounter = 0;
 
 #define PLAYER_ANIMATOR (mEntity->GetComponent<Animator>())
 #define NORMAL_RIGHT 0, "normal-right"
@@ -40,12 +43,13 @@ public:
 		Initializing, Moving, Attached, Finalizing
 	};
 
-	EnemyController(float speed);
+	EnemyController(float speed, int attack);
 	~EnemyController();
 
 	constexpr bool ShouldDestroy() const noexcept { return mShouldDestroy; }
 
 	float Speed = 0.0f;
+	int Attack = 0.0f;
 	glm::vec2 Velocity = {};
 	EnemyState CurrentState = {};
 	

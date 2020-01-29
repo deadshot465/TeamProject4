@@ -15,10 +15,16 @@ public:
 	virtual void Render() override;
 
 protected:
+	virtual void SetupUIEntities();
 	virtual void SetupPlayer();
 	virtual void SetupShield();
+	virtual void UpdateUI();
 
+	Entity* mHpEntities[3];
+	Entity* mShieldEntities[2];
 	Entity* mPlayerEntity = nullptr;
 	Entity* mShieldEntity = nullptr;
+
+#define PLAYER_CONTROLLER (mPlayerEntity->GetComponent<PlayerController>())
 };
 

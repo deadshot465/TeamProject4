@@ -29,8 +29,17 @@ void PlayerController::Update(float deltaTime)
 	assert(mEntity);
 	const auto& animator = PLAYER_ANIMATOR;
 	animator->Play(NORMAL_RIGHT);
-
 	auto adjusted_speed = Speed / std::sqrtf(2.0f);
+
+	if (IsInvincible)
+	{
+		++mCounter;
+		if (mCounter >= 90)
+		{
+			mCounter = 0;
+			IsInvincible = false;
+		}
+	}
 
 	HandleShield();
 	if (mAttackFlag) return;
@@ -171,8 +180,8 @@ void PlayerController::ClampToScreenSize()
 
 }
 
-EnemyController::EnemyController(float speed)
-	: Speed(speed), mShouldDestroy(false)
+EnemyController::EnemyController(float speed, int attack)
+	: Speed(speed), mShouldDestroy(false), Attack(attack)
 {
 }
 
@@ -188,6 +197,7 @@ void EnemyController::Update(float deltaTime)
 {
 	assert(mEntity);
 	ENEMY_ANIMATOR->Play(NORMAL_RIGHT);
+	auto player_entity = mEntity->CurrentScene->GetEntity("player-entity");
 
 	switch (CurrentState)
 	{
@@ -196,20 +206,30 @@ void EnemyController::Update(float deltaTime)
 	case EnemyController::EnemyState::Moving:
 	{
 		if (mSpeedUpdateStopped) break;
-		mPlayerPosition = mEntity->CurrentScene->GetEntity("player-entity")->Position;
+		mPlayerPosition = player_entity->Position;
 		auto distance = glm::distance(mEntity->Position, mPlayerPosition);
 
 		// Set animation.
 		if (mEntity->Position.x > mPlayerPosition.x) ENEMY_ANIMATOR->Play(RUN_LEFT);
 		else ENEMY_ANIMATOR->Play(RUN_RIGHT);
 
-		if (distance > 50.0f)
+		if (distance > 75.0f)
 		{
 			Velocity = glm::normalize(mPlayerPosition - mEntity->Position) * Speed;
 		}
 		else
 		{
 			mSpeedUpdateStopped = true;
+		}
+
+		auto player_collider = player_entity->GetComponent<CircleCollider>();
+		auto collider = mEntity->GetComponent<CircleCollider>();
+		auto player_controller = player_entity->GetComponent<PlayerController>();
+		if (CollisionSystem::CheckCircleCollision(player_collider, collider) &&
+			!player_controller->IsAttacking() && !player_controller->IsInvincible)
+		{
+			player_controller->Hp -= 1;
+			player_controller->IsInvincible = true;
 		}
 		break;
 	}

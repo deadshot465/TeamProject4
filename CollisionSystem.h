@@ -18,6 +18,9 @@ public:
 	static bool CheckWallCollision(const T* colliderType, std::vector<RectangleCollider>& colliders);
 
 	template <typename T = CircleCollider>
+	static bool CheckCircleCollision(const T* collider, const T* other);
+
+	template <typename T = CircleCollider>
 	static bool StartActivated(const T* collider);
 
 	template <typename T = CircleCollider>
@@ -61,6 +64,12 @@ inline bool CollisionSystem::CheckWallCollision(const T* colliderType, std::vect
 	}
 
 	return false;
+}
+
+template<typename T>
+inline bool CollisionSystem::CheckCircleCollision(const T* collider, const T* other)
+{
+	return collider->CheckCollision(*other);
 }
 
 template<typename T>

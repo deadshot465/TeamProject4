@@ -17,8 +17,21 @@ public:
 	virtual void Render() override;
 
 private:
-	void GenerateEnemies(float deltaTime);
+	void GenerateEnemies(float deltaTime, float speedFactor, int attack, int threshold);
+
 	std::vector<CircleCollider*> GetAllEnemyColliders() const noexcept;
 	std::list<Entity*> mEnemyEntities{};
+	Texture mItemTextures[2];
+	Rectangle mItemRectangles[3];
+
+	int mEnemyCounter = 0;
+	bool mIsPaused = false;
+
+	int mThreshold = 2;
+	int mEnemyAttack = 1;
+	float mSpeedFactor = 1.0f;
+	int mTimer = 60;
+	int mScore = 0;
+	int mCounter = 0;
 };
 

@@ -33,14 +33,49 @@ void GameScene::Initialize()
 	MapChipManager::LoadMapChip("./map/stage_floor.csv", "./sprite/map.png", "StageFloor", 11, 5);
 	MapChipManager::LoadMapChip("./map/stage_shadow.csv", "./sprite/map.png", "StageShadow", 11, 5);
 
+	mItemTextures[0] = LoadTexture("./sprite/UI.png");
+	mItemTextures[1] = LoadTexture("./sprite/UI.png");
+	mItemRectangles[0] = { 360, 480, 128, 128 };
+	mItemRectangles[1] = { 600, 480, 128, 128 };
+	mItemRectangles[2] = { 840, 480, 128, 128 };
+
 	mInitialized = true;
 }
 
 void GameScene::Update(float deltaTime)
 {
 	if (!mInitialized) return;
+	
+	// Handle item menu.
+	if (mIsPaused)
+	{
+		if (IsKeyPressed(KEY_ONE))
+		{
+			std::cout << "Select Shield.\n";
+			mIsPaused = false;
+		}
+		else if (IsKeyPressed(KEY_TWO))
+		{
+			std::cout << "Select HP.\n";
+			mIsPaused = false;
+		}
+		else if (IsKeyPressed(KEY_THREE))
+		{
+			std::cout << "Select Time.\n";
+			mIsPaused = false;
+		}
 
-	GenerateEnemies(deltaTime);
+		return;
+	}
+
+	++mCounter;
+	if (mCounter >= 60)
+	{
+		mCounter = 0;
+		--mTimer;
+	}
+
+	GenerateEnemies(deltaTime, mSpeedFactor, mEnemyAttack, mThreshold);
 
 	SceneBase::Update(deltaTime);
 
@@ -73,31 +108,10 @@ void GameScene::Update(float deltaTime)
 				}), mEnemyEntities.end());
 
 			this->RemoveEntity(child->GetName());
+			mScore += 100;
 		}
 		mShieldEntity->Children.clear();
 	}
-
-	/*iter = mEnemyEntities.begin();
-	while (iter != mEnemyEntities.end())
-	{
-		if ((*iter)->GetComponent<EnemyController>()->CurrentState !=
-			EnemyController::EnemyState::Attached)
-		{
-			++iter;
-			continue;
-		}
-
-		auto res = CollisionSystem::CheckWallCollision((*iter)
-			->GetComponent<CircleCollider>(), MapChipManager::GetAllColliders("TitleSide"));
-
-		if (res)
-		{
-			this->RemoveEntity((*iter)->GetName());
-			iter = mEnemyEntities.erase(iter);
-		}
-		else
-			++iter;
-	}*/
 }
 
 void GameScene::Render()
@@ -112,20 +126,45 @@ void GameScene::Render()
 
 	SceneBase::Render();
 
+	// Game Pause
+	if (mIsPaused)
+	{
+		Color color = { 0, 0, 0, 128 };
+		DrawRectangle(0, 0, 1280, 960, color);
+		DrawText("PAUSE", 560, 400, 72, WHITE);
+
+		DrawTexturePro(mItemTextures[0], { 192, 0, 64, 64 }, mItemRectangles[0], { 0, 0 }, 0.0f, WHITE);
+		DrawTexturePro(mItemTextures[1], { 0, 0, 64, 64 }, mItemRectangles[1], { 0, 0 }, 0.0f, WHITE);
+		DrawText("TIME", mItemRectangles[2].x, mItemRectangles[2].y + 32, 56, GOLD);
+	}
+
+	DrawText(FormatText("SCORE: %d", mScore), 750, 24, 48, SKYBLUE);
+	DrawText(FormatText("TIME REMAINING: %d", mTimer), 750, 72, 48, SKYBLUE);
+
 	EndDrawing();
 }
 
-void GameScene::GenerateEnemies(float deltaTime)
+void GameScene::GenerateEnemies(float deltaTime, float speedFactor, int attack, int threshold)
 {
 	static float elapsed_time = 0.0f;
 	static std::uniform_real_distribution<float> time_rng(0.5f, 2.0f);
-	static std::uniform_real_distribution<float> speed_rng(5.0f, 10.0f);
-	static std::uniform_int_distribution<> color_rng(0, 3);
-	static std::uniform_int_distribution<> bool_rng(0, 1);
 	static float until_next = 0.0f;
 	static bool timer_started = false;
-	static constexpr float x_bounds[] = { -500.0f, 1024.0f + 500.0f };
-	static constexpr float y_bounds[] = { -500.0f, 768.0f + 500.0f };
+	static std::uniform_real_distribution<float> x_rng(-500.0f, 1280.0f + 500.0f);
+	static std::uniform_real_distribution<float> y_rng(-500.0f, 960.0f + 500.0f);
+	std::uniform_real_distribution<float> speed_rng(5.0f * speedFactor, 10.0f * speedFactor);
+
+	if (mEnemyCounter >= threshold)
+	{
+		mEnemyCounter = 0;
+		elapsed_time = 0.0f;
+		timer_started = false;
+		mIsPaused = true;
+		++mEnemyAttack;
+		mSpeedFactor *= 1.2f;
+		mThreshold += 5;
+		return;
+	}
 
 	elapsed_time += deltaTime;
 	
@@ -138,15 +177,17 @@ void GameScene::GenerateEnemies(float deltaTime)
 	{
 		if (elapsed_time > until_next)
 		{
+			float x_value = x_rng(RANDOM_ENGINE);
+			float y_value = y_rng(RANDOM_ENGINE);
+			if (y_value > 0.0f && y_value < 960.0f)
+			{
+				while (x_value > 0.0f && x_value < 1280.0f)
+					x_value = x_rng(RANDOM_ENGINE);
+			}
 			auto enemy = mEnemyEntities.emplace_back(this->AddEntity(GetRandomString(10)));
-			enemy->Position = glm::vec2(x_bounds[bool_rng(RANDOM_ENGINE)],
-				y_bounds[bool_rng(RANDOM_ENGINE)]);
-			auto controller = std::make_unique<EnemyController>(speed_rng(RANDOM_ENGINE));
+			enemy->Position = glm::vec2(x_value, y_value);
+			auto controller = std::make_unique<EnemyController>(speed_rng(RANDOM_ENGINE), attack);
 			enemy->AddComponent(controller);
-
-			//Color color = ENEMY_COLORS[color_rng(RANDOM_ENGINE)];
-			//auto circle = std::make_unique<Primitives::Circle>(GetRandomString(10), 25.0f, color);
-			//enemy->AddComponent(circle);
 
 			std::string_view file_names[] = {
 				"./sprite/monster_1_normal_right.png",
@@ -171,6 +212,7 @@ void GameScene::GenerateEnemies(float deltaTime)
 
 			timer_started = false;
 			elapsed_time = 0.0f;
+			++mEnemyCounter;
 		}
 	}
 }
