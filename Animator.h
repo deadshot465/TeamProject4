@@ -10,6 +10,11 @@ class Animator :
 	public Component
 {
 public:
+	enum class AnimationType
+	{
+		Character, Enemy, End
+	};
+
 	Animator(std::string_view fileName, int xCount, int yCount);
 
 	template <size_t N>
@@ -63,6 +68,9 @@ private:
 	size_t mCurrentAnimationIndex = 0;
 	int mCounter = 0;
 	int mAngle = 0;
+
+	inline static std::vector<std::vector<Texture2D>> mPreloadedTextures
+		= std::vector<std::vector<Texture2D>>(size_t(AnimationType::End));
 };
 
 template<size_t N>

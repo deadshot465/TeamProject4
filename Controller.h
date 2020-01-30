@@ -16,6 +16,7 @@ public:
 
 	float Speed = 0.0f;
 	int Hp = 6;
+	std::vector<bool> ShieldCooldowns = std::vector<bool>(2);
 	bool IsInvincible = false;
 
 	constexpr bool IsAttacking() const noexcept { return mAttackFlag; }
@@ -26,6 +27,8 @@ private:
 
 	bool mAttackFlag = false;
 	int mCounter = 0;
+	int mCoolingdownShieldCount = 0;
+	int mCooldownTimer = 0;
 
 #define PLAYER_ANIMATOR (mEntity->GetComponent<Animator>())
 #define NORMAL_RIGHT 0, "normal-right"
@@ -49,7 +52,7 @@ public:
 	constexpr bool ShouldDestroy() const noexcept { return mShouldDestroy; }
 
 	float Speed = 0.0f;
-	int Attack = 0.0f;
+	int Attack = 0;
 	glm::vec2 Velocity = {};
 	EnemyState CurrentState = {};
 	

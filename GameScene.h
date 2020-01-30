@@ -16,18 +16,20 @@ public:
 	virtual void Update(float deltaTime) override;
 	virtual void Render() override;
 
+	constexpr int GetScore() const { return mScore; }
 private:
-	void GenerateEnemies(float deltaTime, float speedFactor, int attack, int threshold);
+	void GenerateEnemies(float deltaTime, float speedFactor, int attack, int threshold, float frequencyFactor = 0.9f);
+	void HandleSelection();
 
 	std::vector<CircleCollider*> GetAllEnemyColliders() const noexcept;
 	std::list<Entity*> mEnemyEntities{};
-	Texture mItemTextures[2];
-	Rectangle mItemRectangles[3];
 
 	int mEnemyCounter = 0;
 	bool mIsPaused = false;
+	bool mIsGameClear = false;
+	bool mIsGameOver = false;
 
-	int mThreshold = 2;
+	int mThreshold = 10;
 	int mEnemyAttack = 1;
 	float mSpeedFactor = 1.0f;
 	int mTimer = 60;

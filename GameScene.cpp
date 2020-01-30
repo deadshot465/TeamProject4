@@ -9,6 +9,7 @@
 #include "MapChipManager.h"
 #include "Primitives.h"
 #include "SFX.h"
+#include "UIManager.h"
 
 GameScene::GameScene() : SceneBase()
 {
@@ -23,6 +24,7 @@ GameScene::GameScene(std::string_view name)
 
 GameScene::~GameScene()
 {
+	
 }
 
 void GameScene::Initialize()
@@ -32,12 +34,6 @@ void GameScene::Initialize()
 	MapChipManager::LoadMapChip("./map/stage_side.csv", "./sprite/map.png", "StageSide", 11, 5);
 	MapChipManager::LoadMapChip("./map/stage_floor.csv", "./sprite/map.png", "StageFloor", 11, 5);
 	MapChipManager::LoadMapChip("./map/stage_shadow.csv", "./sprite/map.png", "StageShadow", 11, 5);
-
-	mItemTextures[0] = LoadTexture("./sprite/UI.png");
-	mItemTextures[1] = LoadTexture("./sprite/UI.png");
-	mItemRectangles[0] = { 360, 480, 128, 128 };
-	mItemRectangles[1] = { 600, 480, 128, 128 };
-	mItemRectangles[2] = { 840, 480, 128, 128 };
 
 	mInitialized = true;
 }
@@ -49,23 +45,29 @@ void GameScene::Update(float deltaTime)
 	// Handle item menu.
 	if (mIsPaused)
 	{
-		if (IsKeyPressed(KEY_ONE))
+		if (!mIsGameClear && !mIsGameOver)
 		{
-			std::cout << "Select Shield.\n";
-			mIsPaused = false;
+			HandleSelection();
+			return;
 		}
-		else if (IsKeyPressed(KEY_TWO))
+		else if (mIsGameClear & !mIsGameOver)
 		{
-			std::cout << "Select HP.\n";
-			mIsPaused = false;
+			if (!UIManager::IsInputting() && IsKeyPressed(KEY_ENTER))
+			{
+				assert(SceneChangeHandler);
+				OnSceneChanged(int(Scenes::TitleScene));
+			}
+			return;
 		}
-		else if (IsKeyPressed(KEY_THREE))
+		else if (!mIsGameClear && mIsGameOver)
 		{
-			std::cout << "Select Time.\n";
-			mIsPaused = false;
+			if (IsKeyPressed(KEY_ENTER))
+			{
+				assert(SceneChangeHandler);
+				OnSceneChanged(int(Scenes::TitleScene));
+			}
+			return;
 		}
-
-		return;
 	}
 
 	++mCounter;
@@ -112,6 +114,20 @@ void GameScene::Update(float deltaTime)
 		}
 		mShieldEntity->Children.clear();
 	}
+
+	// Game Clear
+	if (mTimer <= 0)
+	{
+		mIsPaused = true;
+		mIsGameClear = true;
+	}
+
+	// Game Over
+	if (PLAYER_CONTROLLER->Hp <= 0)
+	{
+		mIsPaused = true;
+		mIsGameOver = true;
+	}
 }
 
 void GameScene::Render()
@@ -129,13 +145,23 @@ void GameScene::Render()
 	// Game Pause
 	if (mIsPaused)
 	{
-		Color color = { 0, 0, 0, 128 };
-		DrawRectangle(0, 0, 1280, 960, color);
-		DrawText("PAUSE", 560, 400, 72, WHITE);
-
-		DrawTexturePro(mItemTextures[0], { 192, 0, 64, 64 }, mItemRectangles[0], { 0, 0 }, 0.0f, WHITE);
-		DrawTexturePro(mItemTextures[1], { 0, 0, 64, 64 }, mItemRectangles[1], { 0, 0 }, 0.0f, WHITE);
-		DrawText("TIME", mItemRectangles[2].x, mItemRectangles[2].y + 32, 56, GOLD);
+		if (!mIsGameClear && !mIsGameOver)
+		{
+			UIManager::ShowItems(this);
+		}
+		else if (mIsGameClear && !mIsGameOver)
+		{
+			if (UIManager::IsInputting())
+				UIManager::RegisterRanking(this);
+			else
+			{
+				UIManager::ShowResult(this);
+			}
+		}
+		else if (!mIsGameClear && mIsGameOver)
+		{
+			UIManager::ShowGameOver(this);
+		}
 	}
 
 	DrawText(FormatText("SCORE: %d", mScore), 750, 24, 48, SKYBLUE);
@@ -144,15 +170,15 @@ void GameScene::Render()
 	EndDrawing();
 }
 
-void GameScene::GenerateEnemies(float deltaTime, float speedFactor, int attack, int threshold)
+void GameScene::GenerateEnemies(float deltaTime, float speedFactor, int attack, int threshold, float frequencyFactor)
 {
 	static float elapsed_time = 0.0f;
-	static std::uniform_real_distribution<float> time_rng(0.5f, 2.0f);
 	static float until_next = 0.0f;
 	static bool timer_started = false;
 	static std::uniform_real_distribution<float> x_rng(-500.0f, 1280.0f + 500.0f);
 	static std::uniform_real_distribution<float> y_rng(-500.0f, 960.0f + 500.0f);
 	std::uniform_real_distribution<float> speed_rng(5.0f * speedFactor, 10.0f * speedFactor);
+	std::uniform_real_distribution<float> time_rng(0.5f * frequencyFactor, 2.0f * frequencyFactor);
 
 	if (mEnemyCounter >= threshold)
 	{
@@ -200,6 +226,7 @@ void GameScene::GenerateEnemies(float deltaTime, float speedFactor, int attack, 
 			int y_count[] = { 1, 1, 1, 1 };
 
 			auto animator = std::make_unique<Animator>(file_names, x_count, y_count);
+			/*auto animator = std::make_unique<Animator>(Animator::AnimationType::Enemy, x_count, y_count);*/
 			animator->SetAnimation(0, "normal-right", { 0, 1, 2, 3 });
 			animator->SetAnimation(1, "run-right", { 0, 1, 2, 3 });
 			animator->SetAnimation(2, "normal-left", { 0, 1, 2, 3 });
@@ -215,6 +242,41 @@ void GameScene::GenerateEnemies(float deltaTime, float speedFactor, int attack, 
 			++mEnemyCounter;
 		}
 	}
+}
+
+void GameScene::HandleSelection()
+{
+	static constexpr int ui_offset = 80;
+
+	if (IsKeyPressed(KEY_ONE))
+	{
+		auto last_shield_position = (*(mShieldUIEntities.rbegin()))->Position;
+		auto last_shield_name = (*(mShieldUIEntities.rbegin()))->GetName();
+		auto new_shield_name = (last_shield_name.substr(0, last_shield_name.size() - 1)) + std::to_string(mShieldUIEntities.size() + 1);
+		auto entity = mShieldUIEntities.emplace_back(this->AddEntity(new_shield_name));
+		entity->Position = glm::vec2(last_shield_position.x + ui_offset, last_shield_position.y);
+
+		auto animator = std::make_unique<Animator>("./sprite/UI.png", 5, 1);
+		animator->SetAnimation(0, "full-shield", { 3 });
+		animator->Play(0, "full-shield");
+
+		entity->AddComponent(animator);
+
+		PLAYER_CONTROLLER->ShieldCooldowns.emplace_back(false);
+	}
+	else if (IsKeyPressed(KEY_TWO))
+	{
+		PLAYER_CONTROLLER->Hp = 6;
+	}
+	else if (IsKeyPressed(KEY_THREE))
+	{
+		mTimer += 10;
+	}
+	else
+	{
+		return;
+	}
+	mIsPaused = false;
 }
 
 std::vector<CircleCollider*> GameScene::GetAllEnemyColliders() const noexcept

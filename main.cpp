@@ -4,7 +4,7 @@
 
 int main()
 {
-    auto window = Window("DEMO", 1280, 960);
+    auto window = Window("DASH", 1280, 960);
 
     window.Run(RAYWHITE);
 

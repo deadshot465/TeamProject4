@@ -5,6 +5,7 @@
 #include "MapChipManager.h"
 #include "Primitives.h"
 #include "SFX.h"
+#include "UIManager.h"
 
 Window::Window(std::string_view title, int width, int height)
 	: mWidth(width), mHeight(height)
@@ -32,6 +33,9 @@ Window::Window(std::string_view title, int width, int height)
 	SFX::LoadSfx("./sfx/dash_1.wav", "Dash");
 	SFX::LoadSfx("./sfx/explosion_1.wav", "Explosion");
 	SFX::LoadMusicFile("./sfx/bensound-scifi.ogg", "DemoMusic");
+
+	// Initialize UI.
+	UIManager::Initialize();
 
 	mCurrentScene = mScenes[size_t(Scenes::TitleScene)].get();
 	mCurrentScene->Initialize();
@@ -82,6 +86,7 @@ void Window::Render()
 
 void Window::Terminate()
 {
+	UIManager::Release();
 	SFX::Release();
 	MapChipManager::Release();
 
@@ -94,25 +99,31 @@ void Window::Terminate()
 void HandleScene(int sceneNo, Window* handle)
 {
 	auto scene_type = Scenes(sceneNo);
+	MapChipManager::Release();
+	UIManager::Reset();
 
 	switch (scene_type)
 	{
 	case Scenes::TitleScene:
 	{
 		auto& scene = handle->mScenes[sceneNo];
-		handle->mCurrentScene = scene.get();
 		if (scene->IsInitialized())
 			scene.reset(new TitleScene("title-scene"));
 		scene->Initialize();
+		scene->WindowHandle = handle;
+		scene->SceneChangeHandler = HandleScene;
+		handle->mCurrentScene = scene.get();
 		break;
 	}
 	case Scenes::GameScene:
 	{
 		auto& scene = handle->mScenes[sceneNo];
-		handle->mCurrentScene = scene.get();
 		if (scene->IsInitialized())
 			scene.reset(new GameScene("game-scene"));
 		scene->Initialize();
+		scene->WindowHandle = handle;
+		scene->SceneChangeHandler = HandleScene;
+		handle->mCurrentScene = scene.get();
 		break;
 	}
 	case Scenes::End:

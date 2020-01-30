@@ -116,7 +116,7 @@ void PlayerController::HandleShield()
 	static constexpr float offset = 1000.0f;
 	static auto dest_offset = glm::vec2();
 	
-	auto get_scene_collider_name = [&]() {
+	std::string get_scene_collider_name = [&]() {
 		if (mEntity->CurrentScene->GetName() == "title-scene") return "TitleSide";
 		if (mEntity->CurrentScene->GetName() == "game-scene") return "StageSide";
 	}();
@@ -144,10 +144,25 @@ void PlayerController::HandleShield()
 
 	if (IsKeyPressed(KEY_Z) && !mAttackFlag)
 	{
-		SFX::PlaySfx("Dash");
-		mAttackFlag = true;
-		dest_offset = glm::normalize(ToGlmVector2(GetMousePosition()) - mEntity->Position) * offset;
-		mEntity->CurrentScene->GetEntity("shield-entity")->GetComponent<ShieldController>()->Enabled = false;
+		auto iter = ShieldCooldowns.begin();
+		while (iter != ShieldCooldowns.end())
+		{
+			if (*iter == true)
+			{
+				++iter;
+				continue;
+			}
+
+			SFX::PlaySfx("Dash");
+			mAttackFlag = true;
+			dest_offset = glm::normalize(ToGlmVector2(GetMousePosition()) - mEntity->Position) * offset;
+			mEntity->CurrentScene->GetEntity("shield-entity")->GetComponent<ShieldController>()->Enabled = false;
+
+			auto&& temp = *iter;
+			temp = true;
+			++mCoolingdownShieldCount;
+			break;
+		}
 	}
 
 	if (counter >= duration)
@@ -155,6 +170,27 @@ void PlayerController::HandleShield()
 		mAttackFlag = false;
 		counter = 0;
 		mEntity->CurrentScene->GetEntity("shield-entity")->GetComponent<ShieldController>()->Enabled = true;
+	}
+
+	if (mCoolingdownShieldCount > 0)
+		++mCooldownTimer;
+
+	if (mCoolingdownShieldCount > 0 && mCooldownTimer >= 90)
+	{
+		mCooldownTimer = 0;
+		--mCoolingdownShieldCount;
+		auto iter = ShieldCooldowns.begin();
+		while (iter != ShieldCooldowns.end())
+		{
+			if (*iter == false)
+			{ 
+				++iter;
+				continue; 
+			}
+			auto&& _temp = *iter;
+			_temp = false;
+			break;
+		}
 	}
 }
 
@@ -213,7 +249,7 @@ void EnemyController::Update(float deltaTime)
 		if (mEntity->Position.x > mPlayerPosition.x) ENEMY_ANIMATOR->Play(RUN_LEFT);
 		else ENEMY_ANIMATOR->Play(RUN_RIGHT);
 
-		if (distance > 75.0f)
+		if (distance > 100.0f)
 		{
 			Velocity = glm::normalize(mPlayerPosition - mEntity->Position) * Speed;
 		}

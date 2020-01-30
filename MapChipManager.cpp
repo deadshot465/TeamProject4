@@ -16,6 +16,9 @@ void MapChipManager::Release()
 {
 	for (auto& mapData : mMapData)
 		UnloadTexture(mapData.Map);
+
+	mMapData.clear();
+	mMaps.clear();
 }
 
 void MapChipManager::LoadMapChip(std::string_view csvFileName, std::string_view textureFileName, std::string_view mapName, size_t xCount, size_t yCount)

@@ -1,6 +1,7 @@
 #pragma once
 #include "ECS.h"
 #include <string_view>
+#include <vector>
 
 class SceneBase :
 	public Scene
@@ -18,10 +19,13 @@ protected:
 	virtual void SetupUIEntities();
 	virtual void SetupPlayer();
 	virtual void SetupShield();
-	virtual void UpdateUI();
+	virtual void UpdateHpUI();
+	virtual void UpdateShieldUI();
 
-	Entity* mHpEntities[3];
-	Entity* mShieldEntities[2];
+	Entity* mHpUIEntities[3];
+	std::vector<Entity*> mShieldUIEntities = std::vector<Entity*>(2);
+	Texture mShieldMask;
+
 	Entity* mPlayerEntity = nullptr;
 	Entity* mShieldEntity = nullptr;
 

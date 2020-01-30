@@ -26,23 +26,25 @@ void SceneBase::Initialize()
 
 void SceneBase::Update(float deltaTime)
 {
-	UpdateUI();
+	UpdateHpUI();
 	Scene::Update(deltaTime);
 }
 
 void SceneBase::Render()
 {
 	Scene::Render();
+	UpdateShieldUI();
 }
 
 void SceneBase::SetupUIEntities()
 {
-	mHpEntities[0] = this->AddEntity("hp-entity-1");
-	mHpEntities[0]->Position = glm::vec2(48, 48);
-	mHpEntities[1] = this->AddEntity("hp-entity-2");
-	mHpEntities[1]->Position = glm::vec2(128, 48);
-	mHpEntities[2] = this->AddEntity("hp-entity-3");
-	mHpEntities[2]->Position = glm::vec2(208, 48);
+	// HP UI
+	mHpUIEntities[0] = this->AddEntity("hp-entity-1");
+	mHpUIEntities[0]->Position = glm::vec2(48, 48);
+	mHpUIEntities[1] = this->AddEntity("hp-entity-2");
+	mHpUIEntities[1]->Position = glm::vec2(128, 48);
+	mHpUIEntities[2] = this->AddEntity("hp-entity-3");
+	mHpUIEntities[2]->Position = glm::vec2(208, 48);
 
 	std::unique_ptr<Animator> animators[3];
 	for (auto& animator : animators)
@@ -54,9 +56,28 @@ void SceneBase::SetupUIEntities()
 		animator->Play(0, "full-health");
 	}
 
-	mHpEntities[0]->AddComponent(animators[0]);
-	mHpEntities[1]->AddComponent(animators[1]);
-	mHpEntities[2]->AddComponent(animators[2]);
+	mHpUIEntities[0]->AddComponent(animators[0]);
+	mHpUIEntities[1]->AddComponent(animators[1]);
+	mHpUIEntities[2]->AddComponent(animators[2]);
+
+	// Shield UI
+	mShieldUIEntities[0] = this->AddEntity("shield-ui-1");
+	mShieldUIEntities[0]->Position = glm::vec2(288, 48);
+	mShieldUIEntities[1] = this->AddEntity("shield-ui-2");
+	mShieldUIEntities[1]->Position = glm::vec2(368, 48);
+
+	std::unique_ptr<Animator> _animators[2];
+	for (auto& animator : _animators)
+	{
+		animator = std::make_unique<Animator>("./sprite/UI.png", 5, 1);
+		animator->SetAnimation(0, "full-shield", { 3 });
+		animator->Play(0, "full-shield");
+	}
+
+	mShieldUIEntities[0]->AddComponent(_animators[0]);
+	mShieldUIEntities[1]->AddComponent(_animators[1]);
+
+	mShieldMask = LoadTexture("./sprite/UI.png");
 }
 
 void SceneBase::SetupPlayer()
@@ -103,37 +124,51 @@ void SceneBase::SetupShield()
 
 	auto shield_collider = std::make_unique<CircleCollider>("shield-collider", 32.0f);
 	mShieldEntity->AddComponent(shield_collider);
-
-	/*auto shield_circle = std::make_unique<Primitives::Circle>(GetRandomString(10), 32.0f);
-	mShieldEntity->AddComponent(shield_circle);*/
 }
 
-void SceneBase::UpdateUI()
+void SceneBase::UpdateHpUI()
 {
+	// HP
 	switch (PLAYER_CONTROLLER->Hp)
 	{
 	case 5:
-		mHpEntities[2]->GetComponent<Animator>()->Play(0, "half-health");
+		mHpUIEntities[2]->GetComponent<Animator>()->Play(0, "half-health");
 		break;
 	case 4:
-		mHpEntities[2]->GetComponent<Animator>()->Play(0, "no-health");
+		mHpUIEntities[2]->GetComponent<Animator>()->Play(0, "no-health");
 		break;
 	case 3:
-		mHpEntities[1]->GetComponent<Animator>()->Play(0, "half-health");
+		mHpUIEntities[1]->GetComponent<Animator>()->Play(0, "half-health");
 		break;
 	case 2:
-		mHpEntities[1]->GetComponent<Animator>()->Play(0, "no-health");
+		mHpUIEntities[1]->GetComponent<Animator>()->Play(0, "no-health");
 		break;
 	case 1:
-		mHpEntities[0]->GetComponent<Animator>()->Play(0, "half-health");
+		mHpUIEntities[0]->GetComponent<Animator>()->Play(0, "half-health");
 		break;
 	case 0:
-		mHpEntities[0]->GetComponent<Animator>()->Play(0, "no-health");
+		mHpUIEntities[0]->GetComponent<Animator>()->Play(0, "no-health");
 		break;
 	default:
-		mHpEntities[2]->GetComponent<Animator>()->Play(0, "full-health");
-		mHpEntities[1]->GetComponent<Animator>()->Play(0, "full-health");
-		mHpEntities[0]->GetComponent<Animator>()->Play(0, "full-health");
+		mHpUIEntities[2]->GetComponent<Animator>()->Play(0, "full-health");
+		mHpUIEntities[1]->GetComponent<Animator>()->Play(0, "full-health");
+		mHpUIEntities[0]->GetComponent<Animator>()->Play(0, "full-health");
 		break;
+	}
+}
+
+void SceneBase::UpdateShieldUI()
+{
+	static std::vector<unsigned char> alphas = std::vector<unsigned char>(mShieldUIEntities.size());
+
+	// Shield
+	for (auto i = 0; i < mShieldUIEntities.size(); ++i)
+	{
+		if (PLAYER_CONTROLLER->ShieldCooldowns[i] == false)
+			continue;
+		Vector2 pos = {};
+		pos.x = mShieldUIEntities[i]->Position.x - 32;
+		pos.y = mShieldUIEntities[i]->Position.y - 32;
+		DrawTextureRec(mShieldMask, { 256, 0, 64, 64 }, pos, WHITE);
 	}
 }

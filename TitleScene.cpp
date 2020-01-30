@@ -6,6 +6,7 @@
 #include "Controller.h"
 #include "Helper.h"
 #include "MapChipManager.h"
+#include "UIManager.h"
 
 TitleScene::TitleScene() : SceneBase()
 {
