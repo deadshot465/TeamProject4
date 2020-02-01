@@ -1,7 +1,21 @@
-﻿  Controller.cpp
+﻿  Animator.cpp
+  Colliders.cpp
+  CollisionSystem.cpp
+  ConfigurationManager.cpp
+  Controller.cpp
+  ECS.cpp
+  GameScene.cpp
+  main.cpp
+  MapChipManager.cpp
+  Primitives.cpp
+  SceneBase.cpp
+  SFX.cpp
+  TitleScene.cpp
+  UIManager.cpp
+  Window.cpp
   コード生成しています。
-  Previous IOBJ not found, fall back to full compilation.
-C:\Users\sonic\OneDrive\文件\repos\TeamProject5\Controller.cpp(122): warning C4715: '`PlayerController::HandleShield'::`2'::<lambda_1>::operator()': 値を返さないコントロール パスがあります。
-  All 2722 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Previous IPDB not found, fall back to full compilation.
+C:\Users\sonic\OneDrive\文件\repos\TeamProject5\Controller.cpp(148): warning C4715: '`PlayerController::HandleShield'::`2'::<lambda_1>::operator()': 値を返さないコントロール パスがあります。
+  All 3804 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
   コード生成が終了しました。
   ChipmunkDemo.vcxproj -> C:\Users\sonic\OneDrive\文件\repos\TeamProject5\x64\Release\Dash.exe

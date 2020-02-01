@@ -28,7 +28,7 @@ void PlayerController::Update(float deltaTime)
 {
 	assert(mEntity);
 	const auto& animator = PLAYER_ANIMATOR;
-	animator->Play(NORMAL_RIGHT);
+	static int animation_timer = 0;
 	auto adjusted_speed = Speed / std::sqrtf(2.0f);
 
 	if (IsInvincible)
@@ -44,35 +44,52 @@ void PlayerController::Update(float deltaTime)
 	HandleShield();
 	if (mAttackFlag) return;
 
-	if (IsKeyDown(KEY_LEFT))
+	if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A))
 	{
-		animator->Play(RUN_LEFT);
-		if (IsKeyDown(KEY_UP) || IsKeyDown(KEY_DOWN))
+		if (animation_timer <= 0)
+		{
+			animator->Play(RUN_LEFT);
+			animation_timer = 30;
+		}
+		
+		if (IsKeyDown(KEY_UP) || IsKeyDown(KEY_DOWN) || IsKeyDown(KEY_S) || IsKeyDown(KEY_W))
 		{
 			mEntity->Position.x -= adjusted_speed;
-			mEntity->Position.y += IsKeyDown(KEY_UP) ? -adjusted_speed : adjusted_speed;
+			mEntity->Position.y += IsKeyDown(KEY_UP) || IsKeyDown(KEY_W) ? -adjusted_speed : adjusted_speed;
 		}
 		else
 			mEntity->Position.x -= Speed;
 	}
-	else if (IsKeyDown(KEY_RIGHT))
+	else if (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D))
 	{
-		animator->Play(RUN_RIGHT);
-		if (IsKeyDown(KEY_UP) || IsKeyDown(KEY_DOWN))
+		if (animation_timer <= 0)
+		{
+			animator->Play(RUN_RIGHT);
+			animation_timer = 30;
+		}
+
+		if (IsKeyDown(KEY_UP) || IsKeyDown(KEY_DOWN) || IsKeyDown(KEY_W) || IsKeyDown(KEY_S))
 		{
 			mEntity->Position.x += adjusted_speed;
-			mEntity->Position.y += IsKeyDown(KEY_UP) ? -adjusted_speed : adjusted_speed;
+			mEntity->Position.y += IsKeyDown(KEY_UP) || IsKeyDown(KEY_W) ? -adjusted_speed : adjusted_speed;
 		}
 		else
 			mEntity->Position.x += Speed;
 	}
-	else if (IsKeyDown(KEY_UP))
+	else if (IsKeyDown(KEY_UP) || IsKeyDown(KEY_W))
 	{
-		if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_RIGHT))
+		if (animation_timer <= 0)
+		{
+			if (mEntity->Position.x < GetMousePosition().x) animator->Play(RUN_RIGHT);
+			else animator->Play(RUN_LEFT);
+			animation_timer = 30;
+		}
+
+		if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_A) || IsKeyDown(KEY_D))
 		{
 			mEntity->Position.y -= adjusted_speed;
-			mEntity->Position.x += IsKeyDown(KEY_LEFT) ? -adjusted_speed : adjusted_speed;
-			if (IsKeyDown(KEY_LEFT))
+			mEntity->Position.x += IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A) ? -adjusted_speed : adjusted_speed;
+			if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A))
 				animator->Play(RUN_LEFT);
 			else
 				animator->Play(RUN_RIGHT);
@@ -83,13 +100,13 @@ void PlayerController::Update(float deltaTime)
 			animator->Play(RUN_RIGHT);
 		}
 	}
-	else if (IsKeyDown(KEY_DOWN))
+	else if (IsKeyDown(KEY_DOWN) || IsKeyDown(KEY_S))
 	{
-		if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_RIGHT))
+		if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_A) || IsKeyDown(KEY_D))
 		{
 			mEntity->Position.y += adjusted_speed;
-			mEntity->Position.x += IsKeyDown(KEY_LEFT) ? -adjusted_speed : adjusted_speed;
-			if (IsKeyDown(KEY_LEFT))
+			mEntity->Position.x += IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A) ? -adjusted_speed : adjusted_speed;
+			if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A))
 				animator->Play(RUN_LEFT);
 			else
 				animator->Play(RUN_RIGHT);
@@ -100,6 +117,15 @@ void PlayerController::Update(float deltaTime)
 			animator->Play(RUN_RIGHT);
 		}
 	}
+
+	if (animation_timer <= 0)
+	{
+		if (mEntity->Position.x < GetMousePosition().x) animator->Play(NORMAL_RIGHT);
+		else animator->Play(NORMAL_LEFT);
+		animation_timer = 10;
+	}
+
+	--animation_timer;
 
 	ClampToScreenSize();
 }
@@ -142,7 +168,7 @@ void PlayerController::HandleShield()
 		ClampToScreenSize();
 	}
 
-	if (IsKeyPressed(KEY_Z) && !mAttackFlag)
+	if (IsKeyPressed(KEY_Z) || IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !mAttackFlag)
 	{
 		auto iter = ShieldCooldowns.begin();
 		while (iter != ShieldCooldowns.end())

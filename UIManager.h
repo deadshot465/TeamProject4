@@ -19,6 +19,8 @@ struct Result
 
 void to_json(nlohmann::json& j, const ResultData& result);
 void from_json(const nlohmann::json& j, ResultData& result);
+void to_json(nlohmann::json& j, const Result& result);
+void from_json(const nlohmann::json& j, Result& result);
 
 class UIManager
 {

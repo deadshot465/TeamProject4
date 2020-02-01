@@ -54,7 +54,7 @@ inline std::string GetRandomString(size_t length)
 
 	auto ss = std::stringstream();
 	
-	for (auto i = 0; i < length; ++i) {
+	for (size_t i = 0; i < length; ++i) {
 		ss << random_chars[rng(RANDOM_ENGINE)];
 	}
 

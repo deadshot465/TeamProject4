@@ -14,6 +14,8 @@ void UIManager::Initialize()
 
 	mItems["Time"].ItemTexture = LoadTexture("./sprite/UI.png");
 	mItems["Time"].ItemRectangle = { 790, 480, 128, 128 };
+
+	ReadFromJson();
 }
 
 void UIManager::Release()
@@ -43,13 +45,13 @@ void UIManager::ShowItems(Scene* scene)
 	DrawText("CHOOSE A POWER-UP", 260, 400, 72, WHITE);
 
 	DrawTexturePro(mItems["Shield"].ItemTexture, { 192, 0, 64, 64 }, mItems["Shield"].ItemRectangle, { 0, 0 }, 0.0f, WHITE);
-	DrawText("1", mItems["Shield"].ItemRectangle.x + 8, mItems["Shield"].ItemRectangle.y, 36, RAYWHITE);
+	DrawText("1", static_cast<int>(mItems["Shield"].ItemRectangle.x + 8), static_cast<int>(mItems["Shield"].ItemRectangle.y), 36, RAYWHITE);
 
 	DrawTexturePro(mItems["Hp"].ItemTexture, { 0, 0, 64, 64 }, mItems["Hp"].ItemRectangle, { 0, 0 }, 0.0f, WHITE);
-	DrawText("2", mItems["Hp"].ItemRectangle.x - 16, mItems["Hp"].ItemRectangle.y, 36, RAYWHITE);
+	DrawText("2", static_cast<int>(mItems["Hp"].ItemRectangle.x - 16), static_cast<int>(mItems["Hp"].ItemRectangle.y), 36, RAYWHITE);
 
-	DrawText("TIME", mItems["Time"].ItemRectangle.x, mItems["Time"].ItemRectangle.y + 32, 56, GOLD);
-	DrawText("3", mItems["Time"].ItemRectangle.x - 16, mItems["Time"].ItemRectangle.y, 36, RAYWHITE);
+	DrawText("TIME", static_cast<int>(mItems["Time"].ItemRectangle.x), static_cast<int>(mItems["Time"].ItemRectangle.y + 32), 56, GOLD);
+	DrawText("3", static_cast<int>(mItems["Time"].ItemRectangle.x - 16), static_cast<int>(mItems["Time"].ItemRectangle.y), 36, RAYWHITE);
 }
 
 void UIManager::RegisterRanking(Scene* scene)
@@ -94,7 +96,7 @@ void UIManager::RegisterRanking(Scene* scene)
 	DrawRectangle(0, 0, 1280, 960, color);
 	DrawText("ENTER YOUR NAME", 260, 400, 72, WHITE);
 	DrawRectangleRec(text_box, LIGHTGRAY);
-	DrawText(mInputString.c_str(), text_box.x + 5, text_box.y + 8, 40, MAROON);
+	DrawText(mInputString.c_str(), static_cast<int>(text_box.x + 5), static_cast<int>(text_box.y + 8), 40, MAROON);
 	DrawText(FormatText("TEXT COUNT: %i/%i", mLetterCount, MAX_COUNT), 480, 560, 30, DARKGRAY);
 
 	if (mouse_on_text)
@@ -102,7 +104,7 @@ void UIManager::RegisterRanking(Scene* scene)
 		if (mLetterCount < MAX_COUNT)
 		{
 			if ((mFrameCounter / 20) % 2 == 0)
-				DrawText("_", text_box.x + 8 + MeasureText(mInputString.c_str(), 40), text_box.y + 12, 40, MAROON);
+				DrawText("_", static_cast<int>(text_box.x + 8) + MeasureText(mInputString.c_str(), 40), static_cast<int>(text_box.y + 12), 40, MAROON);
 		}
 	}
 
@@ -113,7 +115,6 @@ void UIManager::RegisterRanking(Scene* scene)
 		data.Name = mInputString;
 		data.Score = dynamic_cast<GameScene*>(scene)->GetScore();
 		mResults.Results.emplace_back(data);
-		//WriteToJson();
 
 		std::stable_sort(mResults.Results.begin(), mResults.Results.end(),
 			[&](const ResultData& a, const ResultData& b) {
@@ -121,6 +122,8 @@ void UIManager::RegisterRanking(Scene* scene)
 			});
 
 		std::reverse(mResults.Results.begin(), mResults.Results.end());
+
+		WriteToJson();
 	}
 }
 
@@ -134,7 +137,7 @@ void UIManager::ShowResult(Scene* scene)
 
 	int y = 280;
 
-	for (auto i = 0; i < mResults.Results.size(); ++i)
+	for (size_t i = 0; i < mResults.Results.size(); ++i)
 	{
 		if (i > 5) break;
 
@@ -158,12 +161,8 @@ void UIManager::ReadFromJson()
 	auto fs = std::ifstream();
 	fs.open("rankings.json", std::ios_base::in);
 	if (fs.good()) {
-		while (!fs.eof())
-		{
-			fs >> j;
-			auto result = j.get<ResultData>();
-			mResults.Results.emplace_back(result);
-		}
+		fs >> j;
+		mResults = j.get<Result>();
 	}
 	fs.close();
 }
@@ -173,11 +172,8 @@ void UIManager::WriteToJson()
 	auto fs = std::ofstream();
 	fs.open("rankings.json", std::ios_base::out);
 
-	for (const auto& result : mResults.Results)
-	{
-		nlohmann::json j = result;
-		fs << std::setw(4) << j << std::endl;
-	}
+	nlohmann::json j = mResults;
+	fs << std::setw(4) << j << std::endl;
 
 	fs.close();
 }
@@ -194,4 +190,16 @@ void from_json(const nlohmann::json& j, ResultData& result)
 {
 	j.at("Name").get_to(result.Name);
 	j.at("Score").get_to(result.Score);
+}
+
+void from_json(const nlohmann::json& j, Result& result)
+{
+	j.at("Results").get_to(result.Results);
+}
+
+void to_json(nlohmann::json& j, const Result& result)
+{
+	j = nlohmann::json{
+		{ "Results", result.Results }
+	};
 }
