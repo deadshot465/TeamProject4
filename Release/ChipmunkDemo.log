@@ -1,4 +1,0 @@
-﻿  main.cpp
-raylib.lib(core.obj) : error LNK2001: 外部シンボル "_timeEndPeriod@4" は未解決です。
-raylib.lib(core.obj) : error LNK2001: 外部シンボル "_timeBeginPeriod@4" は未解決です。
-C:\Users\sonic\OneDrive\文件\repos\TeamProject5\Release\Dash.exe : fatal error LNK1120: 2 件の未解決の外部参照

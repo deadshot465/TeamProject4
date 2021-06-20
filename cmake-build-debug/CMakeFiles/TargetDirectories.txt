@@ -1,3 +1,0 @@
-/Users/Deadshot465/Projects/TeamProject4/cmake-build-debug/CMakeFiles/rebuild_cache.dir
-/Users/Deadshot465/Projects/TeamProject4/cmake-build-debug/CMakeFiles/edit_cache.dir
-/Users/Deadshot465/Projects/TeamProject4/cmake-build-debug/CMakeFiles/TeamProject4.dir

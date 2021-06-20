@@ -1,2 +1,9 @@
 .vs/
 .idea/
+lib/
+bin/
+Release/
+x64/Debug
+x64/Release
+include/
+cmake-build-debug/
